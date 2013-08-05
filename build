@@ -12,4 +12,6 @@
 
 # make a minified version of the build
 
-node_modules/uglify-js/bin/uglifyjs manglr.js >manglr.min.js
+# cat lib/bind.js lib/scope.js lib/model.js | grep -v '"use strict"' | node_modules/uglify-js/bin/uglifyjs --wrap -c -m >manglr.min.js
+
+node_modules/uglify-js/bin/uglifyjs manglr.js -c -m --lint >manglr.min.js
