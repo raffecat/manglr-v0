@@ -1,0 +1,29 @@
+{
+  "name": "manglr",
+  "version": "0.1.0",
+  "description": "A light-weight DOM bindings library",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/raffecat/manglr.git"
+  },
+  "keywords": [
+    "dom",
+    "bind",
+    "bindings",
+    "live",
+    "model",
+    "mvvm",
+    "modelview"
+  ],
+  "author": "RaffeCat",
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/raffecat/manglr/issues"
+  },
+  "devDependencies": {
+    "uglify-js": "~2.3.6"
+  }
+}

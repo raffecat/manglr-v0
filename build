@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# install uglify-js if necessary
+# yes "npm install" will do this, but I am very lazy
+
+[ -d node_modules/uglify-js ] || npm install uglify-js
+
+# combine all source files, and wrap in a closure to avoid leaking symbols
+# everywhere in the browser; this is rudimentary and will be improved
+
+(echo '(function(exports){'; cat lib/bind.js lib/scope.js lib/model.js; echo '})(window);') | grep -v '"use strict"' >manglr.js
+
+# make a minified version of the build
+
+node_modules/uglify-js/bin/uglifyjs manglr.js >manglr.min.js
