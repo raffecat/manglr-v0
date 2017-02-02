@@ -31,7 +31,8 @@ has a small **well-specified interface** to allow use with custom or
 3rd-party code.
 
 There are official builds of the combined libraries to support most simple
-use-cases. The official builds are around **6 Kb minified**.
+use-cases. The official builds are around **6 Kb minified** and do not
+depend on any other libraries.
 
 **bind.js**
 
