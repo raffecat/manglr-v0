@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Blog</title>
+  </head>
+  <body>
+
+    <m-store name="@posts">
+    </m-store>
+
+    <div m-route="/blog">
+      <SiteNavigation />
+      <MainContentArea>
+        <BlogPost post="{ @posts | first }" />
+      </MainContentArea>
+      <SiteSidebar />
+      <SiteFooter />
+    </div>
+
+    <template m-tag="SiteNavigation">
+    </template>
+
+    <template m-tag="MainContentArea">
+      <div class="container">
+        <div class="content">
+          <m-contents>
+        </div>
+      </div>
+    </template>
+
+    <template m-tag="SiteFooter">
+    </template>
+
+    <template m-tag="BlogPost" m-attribs="post">
+      <article class="blog-post">
+        <h1>{post.title}</h1>
+        <div>{post.content}</div>
+      </article>
+    </template>
+
+    <template m-tag="Story" m-attribs="story">
+      <Image uri="{story.author.profilePicture.uri}" />
+      <Text>{story.author.name}</Text>
+      <Text>{story.text}</Text>
+    </template>
+
+    <template m-tag="NewsFeed" m-attribs="count">
+      <Story m-each="{story in @stories | first {count}}" story="{story}" />
+      <Button on-click="{loadMore}">Load More</Button>
+    </template>
+
+  </body>
+</html>

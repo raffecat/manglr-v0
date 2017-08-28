@@ -1,53 +1,43 @@
 Manglr
 ======
 
-A light-weight DOM bindings library
------------------------------------
+Manglr is an HTML-first, component-friendly _universal_ framework with an
+emphasis on less code and more web standards. It scales from a simple blog
+app to a full CMS, and works in any browser.
 
-**NB. this is a work in progress; it is *nearly* ready to be used.**
+TL;DR
+-----
 
+* HTML-first components and templates
+* One-way data bindings; pure-functional projection
+* Optional server-side rendering (partial or full data population)
+* Static page generation (e.g. S3 deployment)
+* Local server for easy development
 
-* <a href="#intro">Introduction</a>
-* <a href="#directives">Directives</a>
-* <a href="#expressions">Expressions</a>
-* <a href="#models">Models</a>
-* <a href="#scopes">Scopes</a>
-* <a href="#interfaces">Interfaces</a>
+Manglr is typically used to deploy fast, cache-friendly server-rendered
+content that subsequently behaves as a single-page app in the browser.
+You can pre-render as much or as little of the page content as you like.
+The rest will be populated in-browser after the page loads.
 
+Rationale
+---------
 
-<a id="intro"></a>
-Introduction
-------------
+We typically perform _some_ kind of pre-processing on our web apps, be it SCSS,
+webpack, rollup, or some hand-written tweaks.
 
-Manglr is a DOM bindings library inspired by frameworks such as Knockout and
-Angular. Using custom attributes in your HTML, it binds declarative
-**expressions** to your **view model** so that changes in your **models**
-are reflected automatically in the DOM, without writing any rendering code.
+Manglr builds on this premise: if you're going to have a build step, why not
+automate it from day one and take advantage of it up-front: to serve local
+files, compose your components, render with demo-data, lint your markup,
+pre-verify your data bindings, etc.
 
-Why another one? Manglr is structured as a set of small, **independent
-libraries** that can be combined to make a complete system of live DOM
-bindings, expression evaluators and observable data models. Each library
-has a small **well-specified interface** to allow use with custom or
-3rd-party code.
+The ```manglr``` compiler is re-targetable, allowing you to future-proof your
+work: as new browser technologies or runtime techniques become available, the
+compiler can be updated to support them.
 
-There are official builds of the combined libraries to support most simple
-use-cases. The official builds are around **6 Kb minified** and do not
-depend on any other libraries.
+Your work is also re-targetable: exporters can be used to generate e.g. _react_
+components or to move to other frameworks in the future.
 
-**bind.js**
+Status
+------
 
-Binds declarative DOM attributes to live *expressions* in a *ViewModel*, and
-updates the DOM whenever those expressions change in value.
-The ViewModel implementation defines the expression syntax.
-
-**scope.js**
-
-Provides a *ViewModel* for the DOM bindings library. Compiles *expressions*
-and links them to observable *Models* belonging to the application.
-Must be provided with a root Model, which is used to resolve names in expressions.
-
-**model.js**
-
-Implements **Model** and **Collection** objects that the application can use to
-build an observable data model. The *ViewModel* implementation binds these
-objects to *expressions* on behalf of the DOM bindings library.
+Please note that this project is still in the early development phase.

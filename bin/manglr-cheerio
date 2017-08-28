@@ -1,0 +1,59 @@
+#!/usr/bin/env node
+
+const cheerio = require('cheerio');
+const fs = require('fs');
+const path = require('path');
+const log = console.log;
+
+function compileTag(filename, body, includeFrom) {
+  if (!fs.existsSync(filename)) {
+    return log('missing manglr/tag include: '+filename+' (included from '+includeFrom+')');
+  }
+  const source = fs.readFileSync(filename, 'utf8');
+  const $ = cheerio.load(source);
+  performInlines($, body, true, filename);
+  return $.html('body > *:first-child > *');
+}
+
+function performInlines($, body, inCustomTag, inFile) {
+  // remove tag-includes and append inline templates to the body.
+  $('script').each((i,tag)=>{
+    if (tag.attribs.type == "manglr/tag") {
+      let src = tag.attribs.src;
+      if (!src) {
+        log('<script type="manglr/tag">['+i+']: missing "src" attribute');
+        return;
+      }
+      let incPath = path.resolve(path.dirname(inFile), src);
+      let incHtml = compileTag(incPath, body, inFile);
+      //log(tag);
+      let tagBase = path.basename(incPath), tagExt = path.extname(incPath), tagName = tagBase.slice(0,tagBase.length-tagExt.length);
+      body.push('\n\n<script type="manglr/tag" name="'+tagName+'">\n'+incHtml+'\n</script>\n');
+    } else {
+      if (inCustomTag) {
+        log('<script ... >['+i+']: not allowed inside a custom tag, in '+inFile);
+      }
+    }
+  });
+  $('script[type="manglr/tag"]').remove();
+}
+
+function compileTarget(filename) {
+  if (!fs.existsSync(filename)) {
+    return log('not found: '+filename);
+  }
+  const source = fs.readFileSync(filename, 'utf8');
+  const $ = cheerio.load(source);
+
+  const body = [];
+  performInlines($, body, false, filename);
+
+  body.forEach(tag=>{
+    $('body').append(tag)
+  });
+
+  let result = $.html();
+  fs.writeFileSync('out/index.html', result, 'utf8');
+}
+
+compileTarget(process.argv[2]);
