@@ -6,8 +6,7 @@
   </head>
   <body>
 
-    <m-store name="@posts">
-    </m-store>
+    <m-store name="@posts"></m-store>
 
     <div m-route="/blog">
       <SiteNavigation />
@@ -40,9 +39,9 @@
     </template>
 
     <template m-tag="Story" m-attribs="story">
-      <Image uri="{story.author.profilePicture.uri}" />
-      <Text>{story.author.name}</Text>
-      <Text>{story.text}</Text>
+      <img src="{story.author.profilePicture.uri}">
+      <h3>{story.author.name}</h3>
+      <p>{story.text}</p>
     </template>
 
     <template m-tag="NewsFeed" m-attribs="count">

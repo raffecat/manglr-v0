@@ -1,9 +1,9 @@
 Manglr
 ======
 
-Manglr is an HTML-first, component-friendly _universal_ framework with an
-emphasis on less code and more web standards. It scales from a simple blog
-app to a full CMS, and works in any browser.
+Manglr is an HTML-first component-friendly web compiler with an emphasis
+on less code and more web standards. It scales from a simple blog app to
+a full CMS, and works in any browser.
 
 TL;DR
 -----

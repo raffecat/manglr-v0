@@ -29,15 +29,33 @@ const html5 = (
   'canvas noscript script '+ // scripting.
   'del ins '+ // edits.
   'caption col colgroup table tbody td tfoot th thead tr '+ // table.
-  'button datalist fieldset form input label legend meter optgroup option output progress select textarea '+ // forms.
+  'button fieldset form input label legend optgroup option select textarea '+ // forms.
+  'datalist meter output progress '+ // forms (HTML5)
   'details dialog menu menuitem summary '+  // interactive.
-  'element shadow slot template ' // web components.
+  'slot template '+ // web components.
+  'picture '+ // experimental.
+  'iframe' // ubiquitous.
 );
 
+// https://html.spec.whatwg.org/multipage/obsolete.html#non-conforming-features
+// https://www.w3.org/TR/html51/obsolete.html
 const deprecated = (
-  'acronym applet basefont big blink center command content dir element '+
-  'font frame frameset image isindex keygen listing marquee multicol nextid '+
-  'noembed plaintext shadow spacer strike tt xmp'
+  'applet acronym bgsound dir frame frameset noframes isindex listing nextid '+
+  'noembed plaintext strike xmp '+
+  'basefont big blink center font marquee multicol nobr spacer tt '+
+  'command image keygen '+
+  'content element shadow' // Shadow DOM (v0)
+);
+
+// https://www.w3.org/TR/html51/syntax.html#void-elements Section 8.1.2 "Elements"
+const voidElements = (
+  'area base br col embed hr img input link menuitem meta param source track wbr '+ // html5.
+  'basefont command frame isindex keygen' // deprecated.
+);
+
+const foreignElements = (
+  'circle ellipse line path polygon polyline rect '+ // SVG shapes.
+  'stop use' // SVG.
 );
 
 let html5tags = {};
@@ -269,9 +287,10 @@ function compile(mainFile) {
     // Have: compiled templates, their params and param types.
     // Need: compiled template with params, resolved imports, parsed binding expressions.
     let tplTag = rootNode.tag;
+    if (!tplTag) throw new Error("bad node in parseTemplate: "+JSON.stringify(rootNode));
     let tpl = {
       tagName: tplTag, // the root node is the custom-tag name (unless overridden at the import site)
-      outTag: rootNode.attribs['tag'] || tplTag, // the output tag can be different from the custom-tag.
+      outTag: rootNode.attribs['tag'] || rootNode.attribs['m-tag'] || tplTag, // the output tag can be different from the custom-tag.
       params: {},
       nodes: []
     };
@@ -284,7 +303,7 @@ function compile(mainFile) {
     }
     function walkNodes(node, outNodes, where) {
       let tag = node.tag, attribs = node.attribs;
-      if (!tag) throw new Error("no: "+JSON.stringify(node));
+      if (!tag) throw new Error("bad node in walkNodes: "+JSON.stringify(node));
       if (tag === "import") {
 
         // import tag (elided from output)
@@ -339,7 +358,8 @@ function compile(mainFile) {
 
         // resolve custom tag to its template so we can recognise its parameters.
         // warn if it's not a standard html tag and doesn't match a custom template.
-        // TODO: find imports as a pre-pass, so import can be after the first use.
+        // TODO: find imports as a pre-pass, so import can be after the first use,
+        // or register a proxy with a list of use-sites for reporting later.
         let tpl = customTags[tag];
         if (!tpl) {
           if (!hasOwn.call(html5tags, tag)) {
