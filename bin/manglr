@@ -12,11 +12,39 @@ const htmlparser = require("htmlparser2");
 const fs = require('fs');
 const path = require('path');
 const log = console.log;
-const hasOwnProperty = Object.prototype.hasOwnProperty;
+const hasOwn = Object.prototype.hasOwnProperty;
 const plainDomTag = { anyAttrib:true, params:{} };
 
 const validForScriptImport = {'type':1,'src':1,'tag':1};
 const validForTemplateTag = {'tag':1};
+
+const html5 = (
+  'html base body head link meta style title '+                                 // document.
+  'address article aside footer h1 h2 h3 h4 h5 h6 header hgroup nav section '+  // content.
+  'blockquote dd div dl dt figcaption figure hr li main ol p pre ul '+          // text content.
+  'a abbr b bdi bdo br cite code data dfn em i kbd mark q rp rt rtc ruby '+     // inline text.
+  's samp small span strong sub sup time u var wbr '+
+  'area audio img map track video '+ // audio video.
+  'embed object param source '+ // embeds.
+  'canvas noscript script '+ // scripting.
+  'del ins '+ // edits.
+  'caption col colgroup table tbody td tfoot th thead tr '+ // table.
+  'button datalist fieldset form input label legend meter optgroup option output progress select textarea '+ // forms.
+  'details dialog menu menuitem summary '+  // interactive.
+  'element shadow slot template ' // web components.
+);
+
+const deprecated = (
+  'acronym applet basefont big blink center command content dir element '+
+  'font frame frameset image isindex keygen listing marquee multicol nextid '+
+  'noembed plaintext shadow spacer strike tt xmp'
+);
+
+let html5tags = {};
+html5.split(' ').forEach(function(tag){ html5tags[tag]=true });
+
+let deprecatedTags = {};
+deprecated.split(' ').forEach(function(tag){ deprecatedTags[tag]=true });
 
 let nextId = 0;
 function uid() { nextId += 1; return 'm-'+nextId; }
@@ -49,7 +77,7 @@ function encodeBinds(binds) {
 function reportUnused(tag, attribs, allow, filename) {
   for (let i=0, keys=Object.keys(attribs); i<keys.length; i++) {
     let key = keys[i];
-    if (!hasOwnProperty.call(allow, key)) {
+    if (!hasOwn.call(allow, key)) {
       log('unrecognised "'+key+'" attribute was ignored: '+reconstitute(tag,attribs)+'> in: '+filename);
     }
   }
@@ -122,7 +150,7 @@ function parseToDOM(source, filename) {
 }
 
 function compileExpression(source, where) {
-  return { expr:source } // TODO.
+  return { tag:'#expr', expr:source } // TODO.
 }
 
 function textTemplate(source, where) {
@@ -140,7 +168,7 @@ function textTemplate(source, where) {
     let span = spans[i]; // e.g. "embeds} inside a "
     let close = span.indexOf('}');
     if (close < 0) {
-      log('lint: unclosed "{" in string template '+where+' in '+filename);
+      log('lint: unclosed "{" in string template '+where);
       close = span.length; // assume at end of span.
     }
     let expr = span.substring(0, close); // text before '}'
@@ -150,11 +178,24 @@ function textTemplate(source, where) {
       nodes.push(post); // literal text: normWS(post)
     }
   }
-  return { tag:false, nodes:nodes };
+  return { tag:'#text-tpl', nodes:nodes };
 }
 
-function parseBinding(source) {
-  return { source:source } // TODO. provide some indicative output.
+function parseText(source, where) {
+  // recognise the difference between a direct-value binding and a text template.
+  // a direct-value binding contains a single expression, e.g. attrib="{ foo }"
+  // and will be passed through as a non-string binding object (the receiver might
+  // coerce its value to a string however.)
+  if (/^\{(.*)\}$/.test(source)) {
+    // binding is a single expression: provide it as a direct-value binding.
+    return compileExpression(source.substring(1,source.length-1), where);
+  } else if (source.indexOf('{') >= 0) {
+    // binding is a text template: provide a string-value binding.
+    return textTemplate(source, "in attribute '"+key+"' in "+filename);
+  } else {
+    // attribute has a literal value.
+    return { tag:'#text', text:source };
+  }
 }
 
 function compile(mainFile) {
@@ -198,13 +239,15 @@ function compile(mainFile) {
     // The tag name of that root node will be the output tag inserted into the document
     // wherever this component is used (unless overridden by tag="foo")
     // strip whitespace text nodes at the beginning and end.
-    log(doc.children[0].tag, doc.children[1].tag, doc.children[2].tag);
     while (doc.children[0].tag == '#text' && trim(doc.children[0].text).length == 0) doc.children.shift();
     while (doc.children[doc.children.length-1].tag == '#text' && trim(doc.children[doc.children.length-1].text).length == 0) doc.children.pop();
     if (doc.children.length != 1) {
       log('template must contain a single root node (found '+doc.children.length+'): '+filename+(usedFrom ? ' imported from '+usedFrom : ''));
     }
-    return parseTemplate(doc.children[0], filename);
+    let customTags = {}; // FIXME: decide how these are scoped.
+    customTags['m-store'] = { tagName:'m-store', outTag:'', params:{ name:{} } };
+    customTags['m-contents'] = { tagName:'m-contents', outTag:'', params:{} };
+    return parseTemplate(doc.children[0], filename, customTags);
   }
 
   // XXX: decide on the runtime formats here: the template will be compiled as static HTML
@@ -228,208 +271,128 @@ function compile(mainFile) {
     let tplTag = rootNode.tag;
     let tpl = {
       tagName: tplTag, // the root node is the custom-tag name (unless overridden at the import site)
-      outTag: rootNode.attribs['tag'] || tplTag // the output tag can be different from the custom-tag.
+      outTag: rootNode.attribs['tag'] || tplTag, // the output tag can be different from the custom-tag.
+      params: {},
+      nodes: []
     };
     // parse all the template parameters.
-    tpl.params = {};
     for (let i=0, keys=Object.keys(rootNode.attribs); i<keys.length; i++) {
       let key = keys[i], val = rootNode.attribs[key];
       if (key.match(/^in-/)) {
         tpl.params[key.substr(3)] = val;
       }
     }
-    function walkTemplate(tag, attribs, children, outerWhere) {
+    function walkNodes(node, outNodes, where) {
+      let tag = node.tag, attribs = node.attribs;
+      if (!tag) throw new Error("no: "+JSON.stringify(node));
       if (tag === "import") {
+
         // import tag (elided from output)
         if (!attribs.src) {
           return log('missing "src" attribute on template import: '+reconstitute(tag,attribs)+'> in: '+filename);
         }
         let tpl = useTemplate(attribs.src, filename);
-        let tagName = attribs['tag'] || tpl.tagName; // allow local custom-tag name override.
-        if (custom_tags[tagName]) {
+        let tagName = attribs['tag'] || attribs['m-tag'] || tpl.tagName; // allow local custom-tag name override.
+        if (!tagName) {
+          return log('missing tag name (m-tag) on imported: '+reconstitute(tag,attribs)+'> in: '+filename);
+        }
+        if (customTags[tagName]) {
           return log('duplicate custom tag name "'+tagName+'" imported: '+reconstitute(tag,attribs)+'> in: '+filename);
         }
-        custom_tags[tagName] = tpl;
+        customTags[tagName] = tpl;
         reportUnused(tag, attribs, validForScriptImport, filename);
         if (children.length) {
           log('import tag cannot have children: '+reconstitute(tag,attribs)+'> in: '+filename);
         }
-      } else if (tag == "component") {
+
+      } else if (tag == "component" || tag == "template") {
+
         // inline template tag (elided from output)
-        let tagName = attribs['tag'];
-        if (custom_tags[tagName]) {
+        let tagName = attribs['tag'] || attribs['m-tag'];
+        if (!tagName) {
+          return log('missing tag name (m-tag) on declared: '+reconstitute(tag,attribs)+'> in: '+filename);
+        }
+        if (customTags[tagName]) {
           return log('duplicate custom tag name "'+tagName+'" on declared: '+reconstitute(tag,attribs)+'> in: '+filename);
         }
         // make a root node for parseTemplate with the tag name as the root node.
-        let tplRoot = { tag:tagName, attribs:attribs, children:children, hasDocType:false };
-        let tpl = parseTemplate(tplRoot, filename);
-        custom_tags[tagName] = tpl;
+        let tplRoot = { tag:tagName, attribs:attribs, children:node.children, hasDocType:false };
+        let tpl = parseTemplate(tplRoot, filename, customTags);
+        customTags[tagName] = tpl;
+
       } else if (tag == '#text') {
+
         // parse any embedded expressions in the text content.
-        return textTemplate(attribs.text, outerWhere);
+        outNodes.push(parseText(node.text, 'text node in '+where));
+
       } else {
+
         // template import can be placed on the tag itself (elided from output)
         if (attribs['m-import']) {
           let tpl = useTemplate(attribs['m-import'], filename);
-          if (custom_tags[tpl.tagName]) {
+          if (!tpl.tagName) throw new Error("missing tagName");
+          if (customTags[tpl.tagName]) {
             return log('duplicate custom tag name "'+tagName+'" imported: '+reconstitute(tag,attribs)+'> in: '+filename);
           }
-          custom_tags[tpl.tagName] = tpl; // no tag-name override on inline import.
+          customTags[tpl.tagName] = tpl; // no tag-name override on inline import.
         }
+
         // resolve custom tag to its template so we can recognise its parameters.
         // warn if it's not a standard html tag and doesn't match a custom template.
-        let tpl = custom_tags[tag];
+        // TODO: find imports as a pre-pass, so import can be after the first use.
+        let tpl = customTags[tag];
         if (!tpl) {
-          if (tag.indexOf('-') >= 0) { // TODO: use a map of valid HTML tags.
-            log('unrecognised custom tag '+reconstitute(tag,attribs)+'> in: '+filename);
+          if (!hasOwn.call(html5tags, tag)) {
+            // not a valid HTML5 tag.
+            if (hasOwn.call(deprecatedTags, tag)) {
+              log('lint: tag is deprecated in HTML5: '+reconstitute(tag,attribs)+'> in: '+filename);
+            } else {
+              log('unrecognised custom tag '+reconstitute(tag,attribs)+'> in: '+filename);
+            }
           }
           tpl = plainDomTag;
         }
+
         // find all attributes that contain a binding expression and compile those expressions.
         // warn if it's not a standard html attribute and doesn't match a custom attribute.
         // also warn if it is a standard attribute on a tag that doesn't allow those.
         let params = tpl.params, anyAttrib = tpl.anyAttrib;
-        let stat = {}, binds = {};
+        let binds = {};
         for (let i=0, keys=Object.keys(attribs); i<keys.length; i++) {
           let key = keys[i], val = attribs[key];
           let pb = params[key];
           if (!pb && !anyAttrib) {
             log('unrecognised "'+key+'" attribute on tag: '+reconstitute(tag,attribs)+'> in: '+filename);
           }
-          // recognise the difference between a direct-value binding and a text template.
-          // a direct-value binding contains a single expression, e.g. attrib="{ foo }"
-          // and will be passed through as a non-string binding object (the receiver might
-          // coerce its value to a string however.)
-          if (/^\{[^{}]*\}$/.test(val)) {
-            // binding is a single expression: provide it as a direct binding argument.
-            binds[key] = compileExpression(val.substring(1,val.length-1), where);
-          } else if (val.indexOf('{') >= 0) {
-            // binding is a text template: provide a string-valued binding.
-            binds[key] = textTemplate(val, params);
-          } else {
-            // attribute has a literal value.
-            stat[key] = val;
-          }
+          binds[key] = parseText(val, "in attribute '"+key+"' of "+reconstitute(tag,attribs)+"> in "+filename);
         }
-        // walk child nodes recursively and perform all the same steps.
+
+        // walk child nodes recursively and perform all the same parsing steps.
         // TODO: for custom tags, capture content for transclude or warn unused content.
-        // TODO: actually we have the compiled tag-tpl here, so why not inline it and resolve used attributes?
-        // TODO: we also need to determine if/each nodes and make spawnable templates for those.
+        let children = node.children;
         let nodes = [];
-        for (let i=0; i<children.length; i++) {
-          let child = children[i];
-          let result = walkTemplate(child.tag, child.attribs, child.children);
-          // child nodes can be elided during parsing.
-          if (result != null) {
-            nodes.push(result);
+        if (children) {
+          for (let i=0; i<children.length; i++) {
+            let child = children[i];
+            let result = walkNodes(child, nodes, where);
           }
         }
-        return { tag:true, tpl:tpl, stat:stat, binds:binds, nodes:nodes };
+
+        outNodes.push({ tag:tag, tpl:tpl, binds:binds, nodes:nodes });
       }
     }
-    tpl.nodes = walkTemplate(rootNode.tag, rootNode.attribs, rootNode.children);
+    walkNodes(rootNode, tpl.nodes, filename);
     return tpl;
   }
-
-  /*
-  function parseHTML(filename, usedFrom, isRoot) {
-    // parse HTML template and generate json-dom.
-    let custom_tags = {}; // templates imported in this file (might want locals for inline templates)
-    let template_stack = []; // stack of inline 'template' tags being parsed.
-    let decl = {
-      tagName: path.posix.basename(filename).replace(/\.[^\.]+$/,'').toLowerCase(), // default if not declared within this template.
-      outTag: 'div', // root tag to output for this tempate.
-      params: {}, // declared within this template.
-      dom: [], // output dom nodes in this decl.
-      tagStack: [], // currently open tags.
-      binds: {}
-    }
-    // TODO: recognise tag="foo" (or use root tag name) and any m-params on the root tag of the template.
-    let dom = decl.dom; // cached decl.dom.
-    let tagStack = decl.tagStack; // cached decl.tagStack.
-    if (isRoot) {
-      dom.push('<!DOCTYPE html>');
-    }
-    const parser = new htmlparser.Parser({
-      onopentag: function(tag, attribs) {
-        tag = tag.toLowerCase(); // all html and custom tags are mapped to lower-case.
-        log("O "+tag);
-        let stat = {};
-        let binds = {};
-        if (tag === "script" && attribs.type === "manglr/tag") {
-        } else {
-        tagStack.push({ tag:tag, line:1 }); // TODO: line numbers!
-      },
-      onclosetag: function(tag) {
-        log("C "+tag);
-        if (!tagStack.length) {
-          return log('unmatched closing tag </'+tag+'> outside of any open tag in '+filename);
-        }
-        let openTag = tagStack[tagStack.length-1].tag;
-        if (tag == openTag) {
-          tagStack.pop();
-        } else {
-          return log('unmatched closing tag </'+tag+'> does not match currently open tag <'+openTag+'> in '+filename);
-        }
-        if (tag == 'template') {
-          decl = template_stack.pop();
-          dom = decl.dom; // cached decl.dom.
-          tagStack = decl.tagStack; // cached decl.tagStack.
-        } else {
-          dom.push('</'+tag+'>');
-        }
-      },
-      ontext: function(val) {
-      },
-      onerror: function() {
-        log("parser error:", error);
-      },
-      oncomment: function(data) {
-        log("comment: "+data);
-      },
-      oncdatastart: function() {
-        log("warning: CDATA section is deprecated in HTML5, in "+filename);
-        dom.push('<![CDATA[');
-      },
-      oncdataend: function() {
-        dom.push(']]>');
-      },
-      onprocessinginstruction: function(piname, data) {
-        if (trim(data).toLowerCase() == '!doctype html') {
-          if (trim(data) != '!DOCTYPE html') {
-            log('lint: <!DOCTYPE html> has incorrect upper/lower case in '+filename);
-          }
-          foundDocType = true;
-        } else {
-          log('ignored processing instruction: <'+piname+' '+data+'> in '+filename);
-        }
-      }
-    }, {decodeEntities: false});
-
-    // read and parse the source file.
-    if (!fs.existsSync(filename)) {
-      log('not found: '+filename+(usedFrom ? ' imported from '+usedFrom : ''));
-      return decl;
-    }
-    let source = fs.readFileSync(filename, 'utf8');
-    let dom = parseToDOM(source, filename);
-    if (isRoot) {
-      if (!dom.hasDocType) {
-        log('lint: missing <!DOCTYPE html> in '+filename);
-      }
-    }
-    return decl;
-  }
-  return parseHTML(mainFile, null, true);
-  */
 
   return loadTemplate(mainFile);
 }
 
 function compileTarget(filename) {
   const decl = compile(filename);
-  fs.writeFileSync('out/index.html', decl.dom.join(''), 'utf8');
-  fs.writeFileSync('out/binds.js', JSON.stringify(decl.binds), 'utf8');
+  fs.writeFileSync('out/index.json', JSON.stringify(decl,null,2), 'utf8');
+  //fs.writeFileSync('out/index.html', JSON.stringify(decl,null,2), 'utf8');
+  //fs.writeFileSync('out/binds.js', JSON.stringify(decl.binds), 'utf8');
 }
 
 compileTarget(process.argv[2]);
