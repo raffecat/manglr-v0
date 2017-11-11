@@ -27,6 +27,11 @@
     "uglify-js": "~2.3.6"
   },
   "dependencies": {
-    "htmlparser2": "^3.9.2"
+    "@types/htmlparser2": "^3.7.31",
+    "@types/node": "^8.0.50",
+    "css-tree": "^1.0.0-alpha22",
+    "htmlparser2": "^3.9.2",
+    "postcss": "^6.0.13",
+    "postcss-cssnext": "^3.0.2"
   }
 }

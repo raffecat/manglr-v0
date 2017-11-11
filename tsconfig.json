@@ -1,0 +1,19 @@
+{
+    "files": [
+        "src/css-tree.d.ts",
+        "src/manglr.ts"
+    ],
+    "compilerOptions": {
+        "alwaysStrict": true,
+        "noImplicitAny": true,
+        "strictNullChecks": true,
+        "strictFunctionTypes": true,
+        "noImplicitThis": true,
+        "noUnusedLocals": true,
+        "target": "es6",
+        "module": "commonjs",
+        "lib": ["es6"],
+        "outDir": "build",
+        "pretty": true
+    }
+}

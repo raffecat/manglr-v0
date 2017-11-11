@@ -1,0 +1,48 @@
+
+<html lang='en'>
+  <import "github.com/pomke/manglr-bootstrap">
+  
+  <breadcrumb>
+   <crumb {each n, i in @nav} {if !n.disabled} odd={i mod 2} href="#{n.slug}" active={n.active}>{n.name}</crumb>
+  </breadcrumb>
+    
+</html>
+
+<component breadcrumb>
+  <ol.breadcrumb><contents></ol>
+</component>
+
+<component crumb href=? odd=? active=?>
+  <style>
+    .active {
+      color: red;
+    }
+  </style>
+  <li {.active if active} {.odd if odd} onclick={navigateTo:href}>
+    <a href={href}><contents></a>
+  </li>
+</component>
+
+
+
+<html lang='en'>
+  <m-import src="github.com/pomke/manglr-bootstrap"/>
+  <breadcrumb>
+    <crumb m-each="{n, i in @nav}" m-if="{!n.disabled}" odd="{i mod 2}" href="#{n.slug}" active="{n.active}">{n.name}</crumb>
+  </breadcrumb>
+</html>
+
+<component m-tag="breadcrumb">
+  <ol class="breadcrumb"><m-contents/></ol>
+</component>
+
+<component m-tag="crumb" m-attribs="href odd active">
+  <style>
+    .active {
+      color: red;
+    }
+  </style>
+  <li class="{.active if active} {.odd if odd}" onclick="{navigateTo: href}">
+    <a href="{href}"><m-contents/></a>
+  </li>
+</component>

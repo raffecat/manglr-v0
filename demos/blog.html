@@ -17,37 +17,43 @@
       <SiteFooter />
     </div>
 
-    <template m-tag="SiteNavigation">
-    </template>
+    <component name="SiteNavigation">
+    </component>
 
-    <template m-tag="MainContentArea">
+    <component name="MainContentArea">
       <div class="container">
         <div class="content">
-          <m-contents>
+          <contents/>
         </div>
       </div>
-    </template>
+    </component>
 
-    <template m-tag="SiteFooter">
-    </template>
+    <component name="SiteFooter">
+    </component>
 
-    <template m-tag="BlogPost" m-attribs="post">
+    <component name="BlogPost" attribs="post">
       <article class="blog-post">
         <h1>{post.title}</h1>
         <div>{post.content}</div>
       </article>
-    </template>
+    </component>
 
-    <template m-tag="Story" m-attribs="story">
+    <component name="Story" attribs="story">
       <img src="{story.author.profilePicture.uri}">
       <h3>{story.author.name}</h3>
       <p>{story.text}</p>
-    </template>
+    </component>
 
-    <template m-tag="NewsFeed" m-attribs="count">
-      <Story m-each="{story in @stories | first {count}}" story="{story}" />
-      <Button on-click="{loadMore}">Load More</Button>
-    </template>
+    <component name="NewsFeed" attribs="@stories count">
+      <Story each="{story in @stories | first {count}}" story="{story}" />
+      <Button on-click="@stories.loadMore">Load More</Button>
+    </component>
+
+    <component name="Button" actions="click">
+      <div class="button" on-click="click">
+        <contents/>
+      </div>
+    </component>
 
   </body>
 </html>

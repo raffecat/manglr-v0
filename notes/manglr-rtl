@@ -1,0 +1,187 @@
+manglr-rtl
+
+This module provides a small, close-to-the-metal runtime library for manglr
+applications that require dynamic data binding on the client-side.
+
+All of the custom tags, directives and binding expressions used in the project
+contribute their runtime code to a single runtime js file.
+
+Input: the host page will be pre-rendered html with embedded mounting points.
+
+Approach A: on or after DOMContentLoaded, walk the DOM and discover custom manglr
+attributes for 1. applying custom-tag behaviour; 2. attaching bindings to attributes;
+3. injecting if/each templates after data has loaded.
+
+Approach B: tag all necessary pre-rendered nodes with a unique id="m-{nn}" attribute
+if they do not already have a unique id. On or after DOMContentLoaded, iterate over
+a list of per-id bindings and apply those bindings.
+
+Quote: "The whole point of Bublé is that it's quick to install and takes no mental effort to set up. Plugins would ruin that."
+
+Considerations:
+1. bind points are only present for the roots of dynamic sub-trees, i.e. nodes with 'if' or 'each' on them.
+2. within if/each, applying and binding needs to be done for each tree-of-nodes spawned.
+
+The simplest approach is just the straight-forward dynamic implementation:
+1. embed all dynamic templates as nested json structures.
+2. embed all generated binder functions as an array of functions.
+3. embed a small runtime that creates (re-uses) DOM nodes and applies binders.
+
+Bundling concerns:
+1. components and directives need to be pulled in from GitHub etc urls (zero config)
+2. both can inject binders and library-scripts into the runtime bundle.
+
+Runtime concerns:
+1. data bindings need to bind to a data model (Tim wants a standard one built in)
+2. there need to be plug-ins to do things like local-db and sync-to-server.
+3. forms and inputs need an API that flows the other way.
+4. routing supports many views, but is essentially an 'if' directive.
+
+From: https://jasonformat.com/wtf-is-jsx/
+
+function render(vnode) {  
+    // Strings just convert to #text Nodes:
+    if (vnode.split) return document.createTextNode(vnode);
+
+    // create a DOM element with the nodeName of our VDOM element:
+    let n = document.createElement(vnode.nodeName);
+
+    // copy attributes onto the new node:
+    let a = vnode.attributes || {};
+    Object.keys(a).forEach( k => n.setAttribute(k, a[k]) );
+
+    // render (build) and then append child nodes:
+    (vnode.children || []).forEach( c => n.appendChild(render(c)) );
+
+    return n;
+}
+
+RE: https://jasonformat.com/wtf-is-jsx/
+
+In the same way that css classes allow you to pull your style information out of
+the markup, custom attributes (directives) allow you to pull your logic out
+of the markup, while retaining the ability to configure each use.
+
+On code generation: arbitrary javascript is right out. The whole point of data
+bindings is that they (a) won't crash, (b) cannot mutate state (are pure
+projections of stored state) and (c) are re-evaluated as necessary (i.e. we
+understand their dependencies.) Arbitrary javascript code cannot satisfy any
+of these goals. The restrictions placed on data bindings allow you to reason
+about what they do without a lot of mental load: you know a-priori that they
+can't just "do anything they like"; they have no side-effects; you don't have
+to think about scheduling them to run at the right time. No-one (sane) uses
+eval for this purpose; new Function has sane semantics, works in "use strict"
+mode, and isn't even necessary if you are pre-processing your templates (which
+you are with JSX anyway.) Predictability and security are built-in.
+
+  // For file templates, rootNode is the top-level node and the default tag name is its tag name.
+  // For inline templates, rootNode is the <template> tag and it must have an m-tag attribute.
+  // NB. if the final outTag is 'template', we will always elide it like a DocumentFragment.
+
+  // XXX: decide on the runtime formats here: the template will be compiled as static HTML
+  // for the purposes of rendering its initial state or rendering pre-populated views.
+  // -> the server needs a flat array of fragments with tostring placeholders interspersed,
+  //    or it needs compiled functions that can be passed a js object with data to render out.
+  // -> in some cases the data is partial and remaining data needs to be loaded client-side.
+  //    sub-in all the known data, but keep the m-ids in there for client-side updates.
+  // -> on the client side we need to be able to synthesize dom trees for if/each nodes.
+  //    generate a doc-fragment template for each one on the client-side? [many ways, pick one!]
+  //    avoid adjacent comments. use empty text nodes as placeholders.
+
+  // server-side rendering: ideally we want something of the form:
+  // return ['<!DOCTYPE html><html><body><div>', esc(.. generated data expr ..), '</div></body></html>'].join('');
+
+https://github.com/marko-js/isomorphic-ui-benchmarks
+^ Search results: 100 results per page, all change every update.
+^ Color picker: only 3 nodes change every update.
+
+Pat: Webpack is also a compiler. Huge community, plugins for everything.
+Tim: Make it like http://markojs.com/ ?
+
+Pat's Pains with Riot:
+-> 'if' nodes are not removed from the DOM.
+-> 
+
+<img src="small.jpg" srcset="medium.jpg 1000w, large.jpg 2000w"> shim support:
+
+if (!window.shims) window.shims = {};
+(window.shims.img || (window.shims.img=[])).push(function (elem) {
+  // apply your shim to the new dom node (in-document)
+});
+
+https://httpie.org/doc
+http://markojs.com/
+https://getbootstrap.com/docs/4.0/components/breadcrumb/
+https://gist.github.com/g5095/0909a3fb7483b7fa80b9611324f16163 - bootstrap-breadcrumb.html
+https://gist.github.com/anonymous/af82e7ae9561f5f4f1cca75f0d9814a6 - foo.html
+https://github.com/substack/hyperx/blob/master/index.js
+http://netflix.github.io/falcor/
+https://github.com/riot/examples/tree/gh-pages/redux
+https://angular.io/guide/pipes
+
+http://blog.downie.com.au/ - perception of value! (no free plan)
+"More often than not, if you tell someone up front that your app has no value, they’ll believe you! "
+
+https://medium.com/webpack/predictable-long-term-caching-with-webpack-d3eee1d3fa31 - [pain points]
+
+Start with one entry point (HTML page) - [can take multiple entry points and build common dependency sets]
+Pull in components and their css and scripts - [can inline SVG and small data-url images]
+Consider potential build plugins such as automatic CSS sprite sheets.
+Include page fragments (e.g. on routes)
+
+Dynamic: output host HTML with all of the static parts - [lower if/each/routes as json-templates]
+Render: output page HTML with supplied data - [also lower if/each/routes as json-templates]
+
+Can disallow mis-nested elements to simplify the parser, because the input wrong anyway.
+
+const emptyElements = ('area base br col embed hr img input link meta param source track wbr').split(' ');
+const emptyElements = {area:1,base:1,br:1,col:1,embed:1,hr:1,img:1,input:1,link:1,meta:1,param:1,source:1,track:1,wbr:1};
+
+HTML5 Custom Elements: attachedCallback, detachedCallback lifecycle methods.
+
+Angular2:
+<ul><li *ngFor="let hero of heroes" [class.selected]="hero === selectedHero" (click)="onSelect(hero)">...</li></ul>
+<div *ngIf="selectedHero">
+  <h2>{{selectedHero.name}} details!</h2>
+  <input [(ngModel)]="selectedHero.name" placeholder="name"/>
+</div>
+<hero-detail [hero]="selectedHero"></hero-detail>
+
+Q: how does riot parse its attr={ unquoted } HTML?
+
+remoteok: job postings are looking for [designer][developer][frontend]
+^ this is a thing, the designer-developer, and they need a great tool.
+
+Storey - observable models and collections in vanilla [es3] javascript.
+Bindy - in-browser DOM bindings engine with templates [dom level 2].
+^ these are the building blocks for manglr client-side runtime.
+
+Why not MobX?
+requires Object.defineProperty; does not protect against writes;
+new properties are silently non-observable.
+- check out Vuex.
+
+* make sure each/if <option> inside <select> just magically works.
+* <m-grouping> is an invisible element for each/if.
+* structural directives: given a view-container, create/clear instances of template by tpl-id.
+
+Consider:
+custom tags are always imported into components.
+directives are global; should we also import them into components?
+want computed views (sorted by selected column)
+want to observe and react (debounce 300 | request-search)
+want to navigate paginated results
+slideshow: handle wrap-around; pause on hover; restart on click; timeout.
+
+Go bigger!
+
+@ === @this
+@.set({ key:val })
+@.sort('key')
+@global.alert()
+@context.add(foo)
+@event.clientX
+@node.select() -- this DOM node in event handlers.
+@index - in array loop
+@key - in object loop
+
