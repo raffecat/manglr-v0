@@ -15,14 +15,15 @@ import * as ast from './ast';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as URL from 'url';
-import csstree = require("css-tree");
+import mkdirp = require('mkdirp');
+import csstree = require('css-tree');
 
 const log = console.log;
+function trim(s:string) { return s.replace(/^\s\s*/,'').replace(/\s\s*$/,'') }
 
 const hasProtocol = /^[A-Za-z]:/;
 //const isLocalURL = /^file:\/\/\//;
 const absoluteUrlPattern = /^[A-Za-z]:|^\//;
-const validForScriptImport = new Set(['src']);
 const validForStyleTag = new Set(['inline-fonts','component-styles']);
 const validForLinkCSS = new Set(['rel','href','inline','bundle']);
 const validForImportTag = new Set(['src']);
@@ -44,6 +45,7 @@ var siteRootURL = "/pad/";
 var debugLevel = 0;
 var inlineFontFace: ast.Tag|null = null; // first style tag encountered with inline-fonts.
 var componentStyles: ast.Tag|null = null; // first style tag encountered with component-styles.
+var testDataUrl: string = '';
 
 const builtInTpl = new ast.Template('[builtin]');
 const plainDomTag = new ast.TagDefn(builtInTpl, '[DOMTag]', /*rootNodes*/[], /*anyAttrib*/true);
@@ -59,19 +61,25 @@ function warn(msg: string) {
   numWarnings++;
 }
 
-function reconstitute(tag:string, attribs:ast.AttrMap) {
-  let res = '<'+tag;
-  for (let [key,val] of attribs) {
-    res = res + ' ' + key + '="' + val.replace(/"/g,'&quot;') + '"'
+function reconstitute(node:ast.Tag) {
+  let res = '<'+node.tag;
+  for (let [key,val] of node.attribs) {
+    res = res + ' ' + key + '="'+val+'"'; // NB. can include un-escaped quotes.
   }
-  return res; // NB. closing '>' or '/>' is up to the caller.
+  return res+'>';
 }
 
-function reportUnused(tag:string, attribs:ast.AttrMap, allow:Set<string>, filename:string) {
-  for (let [key,_] of attribs) {
+function reportUnused(node:ast.Tag, allow:Set<string>, filename:string) {
+  for (let [key,_] of node.attribs) {
     if (!allow.has(key)) {
-      warn('unrecognised "'+key+'" attribute was ignored: '+reconstitute(tag,attribs)+'> in: '+filename);
+      warn('unrecognised "'+key+'" attribute was ignored: '+reconstitute(node)+' in: '+filename);
     }
+  }
+}
+
+function assertEmpty(node:ast.Tag, filename:string) {
+   if (node.children.length) {
+    warn('tag should not contain markup: '+reconstitute(node)+' in: '+filename);
   }
 }
 
@@ -79,15 +87,14 @@ function compileExpression(source:string, where:string) {
   return new ast.Expression(source, where); // TODO.
 }
 
-function textTemplate(source:string, where:string) {
+function parsePlaceholders(source:string, outNodes:ast.TplNode[], where:string) {
   // "some {embeds} inside a {text} template."
   // ["some ", {}, " inside a ", {}, " template."]
-  const nodes: ast.TextTPlNode[] = [];
   const spans = source.split('{');
   // ^ ["some ","embeds} inside a ","text} template."]
   const pre = spans[0]; // text before the first '{' (can be empty)
   if (pre) {
-    nodes.push(new ast.Text(pre, where)); // literal text: normWS(pre)
+    outNodes.push(new ast.Text(pre, where)); // literal text: normWS(pre)
   }
   for (let i=1; i<spans.length; i++) {
     const span = spans[i]; // e.g. "embeds} inside a "
@@ -98,15 +105,14 @@ function textTemplate(source:string, where:string) {
     }
     const expr = span.substring(0, close); // text before '}'
     const post = span.substring(close+1); // text after '}'
-    nodes.push(compileExpression(expr, where));
+    outNodes.push(compileExpression(expr, where));
     if (post.length) {
-      nodes.push(new ast.Text(post, where)); // literal text: normWS(post)
+      outNodes.push(new ast.Text(post, where)); // literal text: normWS(post)
     }
   }
-  return new ast.TextTemplate(nodes, where);
 }
 
-function parseText(source:string, where:string) {
+function parseAttribute(source:string, where:string) {
   // recognise the difference between a direct-value binding and a text template.
   // a direct-value binding contains a single expression, e.g. attrib="{ foo }"
   // and will be passed through as a non-string binding object (the receiver might
@@ -116,9 +122,11 @@ function parseText(source:string, where:string) {
     return compileExpression(source.substring(1,source.length-1), where);
   } else if (source.indexOf('{') >= 0) {
     // binding is a text template: provide a string-value binding.
-    return textTemplate(source, where);
+    const nodes:ast.TextTPlNode[] = [];
+    parsePlaceholders(source, nodes, where);
+    return new ast.TextTemplate(nodes, where);
   } else {
-    // attribute has a literal value.
+    // binding to a literal value.
     return new ast.Text(source, where);
   }
 }
@@ -230,9 +238,22 @@ function parseStyleSheet(sheet:ast.StyleSheet, source:string) {
 
 // Phase 1.
 
+// A pre-pass to find <import> and <component> tags (to load HTML)
+// and <link rel='stylesheet' inline> tags (to load CSS)
+
+// also record <style inline-fonts> and <style component-styles> on
+// main templates so we can move styles there in a later pass.
+
+// also attach <meta>, <link>, <script move-to-> tags to the tag-defn within
+// components and index the components used within each component, so each
+// main template can build its own set of head and footer tags.
+
+// TODO: <meta charset> handling: convert components to the main template charset?
+
 function loadTemplate(tpl:ast.Template) {
   // Load and compile a template from its source file.
-  const filename = tpl.filename, usedFrom: string|null = tpl.usedFrom[0];
+  const filename = tpl.filename;
+  const usedFrom: string|null = tpl.usedFrom[0];
   if (!fs.existsSync(filename)) {
     error('not found: '+filename+(usedFrom ? ' imported from '+usedFrom : ''));
     return; // cannot load.
@@ -248,169 +269,252 @@ function loadTemplate(tpl:ast.Template) {
 
 function parseTemplate(tpl:ast.Template, rootNodes:ast.Node[]) {
   // each top-level Element is a component declaration.
-  for (let rootNode of rootNodes) {
-    if (rootNode instanceof ast.Tag) {
-      // make a tag defn for each root element.
-      const domNodes = tpl.isMain ? [rootNode] : rootNode.children;
-      const defn = new ast.TagDefn(tpl, rootNode.tag, domNodes);
-      if (debugLevel) log(`=> new TagDefn '${defn.tagName}' in tpl ${tpl.filename}`);
-      tpl.tags.set(defn.tagName, defn);
-      // parse the attributes (parameters of the custom tag)
-      for (let [name,val] of rootNode.attribs) {
-        defn.params.set(name, val);
+  for (let node of rootNodes) {
+    if (node instanceof ast.Tag) {
+      switch (node.tag) {
+        case 'import':
+          parseImportTag(tpl, null, node);
+          break;
+        case 'component':
+          parseComponentTag(tpl, node);
+          break;
+        case 'html':
+          parseHTMLTag(tpl, node);
+          break;
+        default:
+          // must be a component definition (custom tag)
+          if (html5tags.has(node.tag)) {
+            warn('HTML component tag '+reconstitute(node)+' should not use a standard HTML5 tag name, in: '+tpl.filename);
+          }
+          // make a tag defn for each root element.
+          const defn = new ast.TagDefn(tpl, node.tag, node.children);
+          if (debugLevel) log(`=> new TagDefn '${defn.tagName}' in tpl ${tpl.filename}`);
+          tpl.tags.set(defn.tagName, defn);
+          // parse the attributes (parameters of the custom tag)
+          for (let [name,val] of node.attribs) {
+            defn.params.set(name, val);
+          }
+          // phase 1: find inline components and imports.
+          findComponents(tpl, defn, node.children);
+          break;
       }
-      // phase 1: find inline components and imports.
-      findComponents(tpl, rootNode.children);
     } else {
-      log('lint: ignored root element of type '+rootNode.tag+' in template: '+tpl.filename);
+      log('lint: ignored root element of type '+node.tag+' in template: '+tpl.filename);
     }
   }
 }
 
-function findComponents(tpl:ast.Template, nodelist:ast.Node[]) {
+function findComponents(tpl:ast.Template, defn:ast.TagDefn, nodelist:ast.Node[]) {
   // phase 1: find "import" and inline "component" nodes.
-  const filename = tpl.filename;
   for (let node of nodelist) {
     if (node instanceof ast.Tag) {
-
-      const tag = node.tag, attribs = node.attribs;
-      if (tag === "import") {
-
-        // import tag (elided from output)
-        const src = attribs.get('src');
-        if (debugLevel) log(`=> import: '${src}' in ${tpl.filename}`);
-        if (src) {
-          const pendingTpl = useTemplate(src, filename);
-          tpl.tplsImported.push(pendingTpl);
-          reportUnused(tag, attribs, validForScriptImport, filename);
-          if (node.children.length) {
-            error('import tag cannot have children: '+reconstitute(tag,attribs)+'> in: '+filename);
+      switch (node.tag) {
+        case 'import':
+          parseImportTag(tpl, defn, node);
+          break;
+        case 'component':
+          parseComponentTag(tpl, node);
+          break;
+        case 'link':
+          const rel = node.attribs.get('rel');
+          if (!rel) {
+            warn('missing "ref" attribute on tag: '+reconstitute(node)+' in: '+tpl.filename);
+          } else if (rel === 'test-data') {
+            parseTestDataTag(tpl, defn, node);
+          } else if (rel === 'stylesheet') {
+            parseLinkRelTag(tpl, defn, node);
           }
-        } else {
-          error('missing "src" attribute on template import: '+reconstitute(tag,attribs)+'> in: '+filename);
-        }
-
-        reportUnused(tag, attribs, validForImportTag, filename);
-
-      } else if (tag === "component") {
-
-        // inline template tag (elided from output)
-        const tagName = attribs.get('name');
-        if (tagName) {
-          const other = tpl.tags.get(tagName);
-          if (other) {
-            error('duplicate custom tag name "'+tagName+'" declared on '+reconstitute(tag,attribs)+'> (and elsewhere in the same file) in: '+filename);
-          } else {
-            // make a tag defn for the inline component.
-            const defn = new ast.TagDefn(tpl, tagName, node.children);
-            // parse the attributes (parameters of the custom tag)
-            for (let [name,val] of attribs) {
-              if (name !== 'name') {
-                defn.params.set(name, val);
-              }
-            }
-            tpl.tags.set(defn.tagName, defn);
-          }
-        } else {
-          error('missing name attribute on inline component: '+reconstitute(tag,attribs)+'> in: '+filename);
-        }
-
-        // walk child nodes recursively to find components.
-        findComponents(tpl, node.children);
-
-      } else if (tag === 'link' && attribs.get('rel') === 'stylesheet') {
-
-        const href = attribs.get('href');
-        if (!href) {
-          warn('missing "href" attribute on tag: '+reconstitute(tag,attribs)+'> in: '+filename);
-        } else {
-          const proxy = importCSS(href, filename);
-          tpl.sheetsImported.push(proxy);
-
-          // inline
-          // move the contents of this style-sheet (and its imports) into an inline <style> tag.
-          if (attribs.get('inline') != null) {
-            if (debugLevel) log('=> replacing '+reconstitute(tag,attribs)+'> with contents of "'+href+'" in: '+filename);
-            node.sheet = proxy; // mark this tag to be replaced with inline styles.
-          }
-        }
-
-        reportUnused(tag, attribs, validForLinkCSS, filename);
-
-      } else if (tag === 'style') {
-
-        // collect the text node(s) inside the tag.
-        const fragments: string[] = [];
-        for (let child of node.children) {
-          if (child instanceof ast.Text) {
-            fragments.push(child.text);
-          } else {
-            error('unexpected tag <'+child.tag+'> inside style tag: '+reconstitute(tag,attribs)+'> in: '+filename);
-          }
-        }
-
-        const sheet = new ast.StyleSheet(filename, filename);
-        allStyleSheets.push(sheet);
-        parseStyleSheet(sheet, fragments.join(""));
-        node.sheet = sheet;
-
-        // inline-fonts
-        // collect @font-face directives from all CSS files in this style tag.
-        if (attribs.get('inline-fonts') != null && inlineFontFace == null) {
-          inlineFontFace = node;
-        }
-
-        // component-styles
-        // collect inline styles for all components in this style tag.
-        if (attribs.get('component-styles') != null && componentStyles == null) {
-          componentStyles = node;
-        }
-
-        reportUnused(tag, attribs, validForStyleTag, filename);
-
-      } else {
-
-        // template import can be placed on the tag itself (elided from output)
-        // TODO: does this still make sense when an import can define multiple tags?
-        const importSrc = attribs.get('import');
-        if (importSrc) {
-          const pendingTpl = useTemplate(importSrc, filename);
-          tpl.tplsImported.push(pendingTpl);
-        }
-
-        // walk child nodes recursively to find components.
-        findComponents(tpl, node.children);
+          break;
+        case 'style':
+          parseStyleTag(tpl, defn, node);
+          break;
+        default:
+          // walk child nodes recursively.
+          findComponents(tpl, defn, node.children);
+          break;
       }
     }
   }
 }
 
-// XXX: decide on the runtime formats here: the template will be compiled as static HTML
-// for the purposes of rendering its initial state or rendering pre-populated views.
-// -> on the client side we need to be able to synthesize dom trees for if/each nodes.
-//    generate a doc-fragment template for each one on the client-side? [many ways, pick one!]
-//    avoid adjacent comments. use empty text nodes as placeholders.
+function parseImportTag(tpl:ast.Template, defn:ast.TagDefn|null, node:ast.Tag) {
+  // import tag (elided from output)
+  node.elide = true;
+  const filename = tpl.filename;
+  const src = node.attribs.get('src');
+  if (src) {
+    if (debugLevel) log(`=> import: '${src}' in ${filename}`);
+    const pendingTpl = useTemplate(src, filename);
+    if (defn != null) {
+      // scope the import to this TagDefn, instead of the whole template.
+      defn.tplsImported.push(pendingTpl);
+    } else {
+      // scope the import to the whole template (and every TagDefn inside it)
+      tpl.tplsImported.push(pendingTpl);
+    }
+  } else {
+    error('missing "src" attribute on '+reconstitute(node)+' in: '+filename);
+  }
+  reportUnused(node, validForImportTag, filename);
+  assertEmpty(node, filename);
+}
 
-// server-side rendering: ideally we want something of the form:
-// return ['<!DOCTYPE html><html><body><div>', esc(.. generated data expr ..), '</div></body></html>'].join('');
+function parseComponentTag(tpl:ast.Template, node:ast.Tag) {
+  // inline component tag (elided from output)
+  node.elide = true;
+  const tagName = node.attribs.get('name');
+  if (tagName) {
+    const other = tpl.tags.get(tagName);
+    if (other) {
+      error('duplicate custom tag name "'+tagName+'" declared on '+reconstitute(node)+' (and elsewhere in the same file) in: '+tpl.filename);
+    } else {
+      // make a tag defn for the inline component.
+      const defn = new ast.TagDefn(tpl, tagName, node.children);
+      // parse the attributes (parameters of the custom tag)
+      for (let [name,val] of node.attribs) {
+        if (name !== 'name') {
+          defn.params.set(name, val);
+        }
+      }
+      tpl.tags.set(defn.tagName, defn);
+      // walk child nodes recursively.
+      findComponents(tpl, defn, node.children);
+    }
+  } else {
+    error('missing "name" attribute on '+reconstitute(node)+' in: '+tpl.filename);
+  }
+}
 
-// client-side rendering: walk a flat array of the form:
-// [tag-idx, tpl-idx, n-stat, ( name-idx, val-idx ), n-bind, ( name-idx, binder-idx ), n-child, ( data for n children ... ) ]
-// tag-idx is into a table of DOM node types and re-use lists of same.
-// tpl-idx is into a list of template bind functions (custom tag controllers)
+function parseHTMLTag(tpl:ast.Template, node:ast.Tag) {
+  if (tpl.isMain) {
+    const children = [node]; // the <html> tag is part of the contents of this "component".
+    const defn = new ast.TagDefn(tpl, 'html', children);
+    if (tpl.tags.get('html')) {
+      error('more than one top-level <html> tag found, in: '+tpl.filename);
+    }
+    tpl.tags.set('html', defn);
+    findComponents(tpl, defn, children);
+  } else {
+    error('imported HTML components cannot have a top-level <html> tag, in: '+tpl.filename);
+  }
+}
 
+function parseTestDataTag(tpl:ast.Template, defn:ast.TagDefn, node:ast.Tag) {
+  node.elide = true;
+  const href = node.attribs.get('href');
+  if (!href) {
+    warn('missing "href" attribute on tag: '+reconstitute(node)+' in: '+tpl.filename);
+  } else {
+    testDataUrl = href;
+  }
+}
+
+function parseLinkRelTag(tpl:ast.Template, defn:ast.TagDefn, node:ast.Tag) {
+  const filename = tpl.filename;
+  const href = node.attribs.get('href');
+  if (!href) {
+    warn('missing "href" attribute on tag: '+reconstitute(node)+' in: '+filename);
+  } else {
+    const proxy = importCSS(href, filename);
+    tpl.sheetsImported.push(proxy);
+
+    // inline
+    // move the contents of this style-sheet (and its imports) into an inline <style> tag.
+    if (node.attribs.get('inline') != null) {
+      if (debugLevel) log('=> replacing '+reconstitute(node)+' with contents of "'+href+'" in: '+filename);
+      node.tag = 'style';
+      node.attribs.delete('rel');
+      node.sheet = proxy;
+    } else {
+      // not inline
+      // if this <link> tag is in a component, move it to the main template.
+      if (!tpl.isMain) {
+        node.elide = true; // do not emit as part of the component.
+        // NB. shallow copy that shares attribs and children, but since the original
+        // tag is elided, we can safely take ownership of those on the new tag.
+        // const copyOfTag = new ast.Tag('link', node.attribs, node.children);
+
+        // add this to the tag-defn as a head-inject tag, so any page or
+        // component that uses this component will include it (unique)
+        // ^ such a tag cannot be conditional or repeated -- perhaps later? (OR all conditions)
+        defn.linkTags.push(node);
+      }
+    }
+  }
+
+  reportUnused(node, validForLinkCSS, filename);
+  assertEmpty(node, filename);
+}
+
+function parseStyleTag(tpl:ast.Template, defn:ast.TagDefn, node:ast.Tag) {
+  // collect the text node(s) inside the tag.
+  const filename = tpl.filename;
+  const fragments: string[] = [];
+  for (let child of node.children) {
+    if (child instanceof ast.Text) {
+      fragments.push(child.text);
+    } else {
+      error('unexpected tag <'+child.tag+'> inside style tag: '+reconstitute(node)+' in: '+filename);
+    }
+  }
+
+  const sheet = new ast.StyleSheet(filename, filename);
+  allStyleSheets.push(sheet);
+  parseStyleSheet(sheet, fragments.join(""));
+  node.sheet = sheet;
+
+  if (!tpl.isMain) {
+    sheet.fromComponent = true;
+  }
+
+  // inline-fonts
+  // collect @font-face directives from all CSS files in this style tag.
+  if (node.attribs.get('inline-fonts') != null) {
+    if (sheet.fromComponent) {
+      error('cannot apply the "inline-fonts" attribute to a <style> tag inside a component, in '+filename);
+    } else if (inlineFontFace == null) {
+      inlineFontFace = node;
+    }
+  }
+
+  // component-styles
+  // collect inline styles for all components in this style tag.
+  if (node.attribs.get('component-styles') != null) {
+    if (sheet.fromComponent) {
+      error('cannot apply the "component-styles" attribute to a <style> tag inside a component, in '+filename);
+    } else if (componentStyles == null) {
+      componentStyles = node;
+    }
+  }
+
+  reportUnused(node, validForStyleTag, filename);
+}
 
 
 // Phase 2.
 
-function customTagsForTpl(tpl:ast.Template):ast.DefnMap {
+function customTagsForDefn(tpl:ast.Template, defn:ast.TagDefn):ast.DefnMap {
   // build the set of custom tags from the templates imported into this template.
   const customTags: ast.DefnMap = new Map();
   // start with all the built-in tags in our custom-tags map.
   for (let [name,defn] of builtInTpl.tags) {
     customTags.set(name, defn);
   }
-  // now add the custom tags defined in each imported template.
+  // add the custom tags imported into this TagDefn.
+  // TODO: selective imports and renames.
+  for (let srcTpl of defn.tplsImported) {
+    for (let [name,defn] of srcTpl.tags) {
+      // detect name conflicts.
+      const other = customTags.get(name);
+      if (other) {
+        error('duplicate custom tag name "'+name+'" imported from "'+srcTpl.filename+'" and "'+other.tpl.filename+'" in: '+tpl.filename);
+      } else {
+        if (debugLevel) log(`=> register custom tag: '${name}' in ${tpl.filename}`);
+        customTags.set(name, defn);
+      }
+    }
+  }
+  // add the custom tags imported into this Template.
   // TODO: selective imports and renames.
   for (let srcTpl of tpl.tplsImported) {
     for (let [name,defn] of srcTpl.tags) {
@@ -428,10 +532,10 @@ function customTagsForTpl(tpl:ast.Template):ast.DefnMap {
 }
 
 function buildTagsInTpl(tpl:ast.Template) {
-  // build the set of custom tags from the templates imported into this template.
-  const customTags = customTagsForTpl(tpl);
   // phase 2: parse dom nodes and build the template.
   for (let [_,defn] of tpl.tags) {
+    // build the set of custom tags from the components imported into this TagDefn and Template.
+    const customTags = customTagsForDefn(tpl, defn);
     buildTagDefn(tpl, defn.rootNodes, defn.nodes, customTags);
   }
 }
@@ -439,18 +543,21 @@ function buildTagsInTpl(tpl:ast.Template) {
 const nonWhiteSpace = /\S/;
 
 function appendStyles(sheet:ast.StyleSheet, outNodes:ast.TplNode[], filename:string) {
-  const cssText = new ast.Text(csstree.translate(sheet.ast), filename, /*markup*/true);
-  // walk backwards, skipping text nodes that contain only whitespace.
-  var pos = outNodes.length, lastNode = outNodes[--pos];
-  while (lastNode instanceof ast.Text && !nonWhiteSpace.test(lastNode.text)) {
-    lastNode = outNodes[--pos];
-  }
-  // now, if the last node is a <style> tag, append this style-sheet to it.
-  if (lastNode instanceof ast.TplTag && lastNode.tag === 'style') {
-    if (debugLevel) log(`=> merged adjacent style nodes`);
-    lastNode.children.push(cssText);
-  } else {
-    outNodes.push(new ast.TplTag('style', new Map(), [cssText]));
+  const genCSS = csstree.translate(sheet.ast);
+  if (nonWhiteSpace.test(genCSS)) {
+    const cssText = new ast.Text(genCSS, filename, /*markup*/true);
+    // walk backwards, skipping text nodes that contain only whitespace.
+    var pos = outNodes.length, lastNode = outNodes[--pos];
+    while (lastNode instanceof ast.Text && !nonWhiteSpace.test(lastNode.text)) {
+      lastNode = outNodes[--pos];
+    }
+    // now, if the last node is a <style> tag, append this style-sheet to it.
+    if (lastNode instanceof ast.TplTag && lastNode.tag === 'style') {
+      if (debugLevel) log(`=> merged adjacent style nodes`);
+      lastNode.children.push(cssText);
+    } else {
+      outNodes.push(new ast.TplTag('style', new Map(), [cssText]));
+    }
   }
 }
 
@@ -460,109 +567,115 @@ function buildTagDefn(tpl:ast.Template, nodelist:ast.Node[], outNodes:ast.TplNod
   for (let node of nodelist) {
     if (node instanceof ast.Text) {
       // parse any embedded expressions in the text content.
-      outNodes.push(parseText(node.text, 'text node in '+filename));
+      parsePlaceholders(node.text, outNodes, 'text node in '+filename);
     } else if (node instanceof ast.Tag) {
-      const tag = node.tag, attribs = node.attribs;
-      if (tag === 'style') {
-        // output CSS into an inline style tag.
-        if (node.sheet) {
-          appendStyles(node.sheet, outNodes, filename);
-        }
-      } else if (tag === 'link' && attribs.get('rel') === 'stylesheet' && node.sheet != null) {
-        // replace the link tag with a style tag containing the css.
-        appendStyles(node.sheet, outNodes, filename);
-      } else if (tag !== "import" && tag !== "component") {
-
-        // resolve custom tag to its template so we can recognise its parameters.
-        // warn if it's not a standard html tag and doesn't match a custom template.
-        // TODO: find imports as a pre-pass, so import can be after the first use,
-        // or register a proxy with a list of use-sites for reporting later.
-        let tagDef = customTags.get(tag);
-        if (!tagDef) {
-          if (!html5tags.has(tag)) {
-            // not a valid HTML5 tag.
-            if (deprecatedTags.has(tag)) {
-              log('lint: tag is deprecated in HTML5: '+reconstitute(tag,attribs)+'> in: '+filename);
-            } else {
-              error('custom tag <'+tag+'> is not defined (or imported) in '+filename);
-            }
+      if (node.elide) continue;
+      switch (node.tag) {
+        case 'style': {
+          // deferred until all style-sheets have loaded.
+          // output CSS into an inline style tag.
+          if (node.sheet) {
+            appendStyles(node.sheet, outNodes, filename);
           }
-          tagDef = plainDomTag;
+          break;
         }
-
-        // find all attributes that contain a binding expression and compile those expressions.
-        // warn if it's not a standard html attribute and doesn't match a custom attribute.
-        // also warn if it is a standard attribute on a tag that doesn't allow those.
-        var condition: ast.Expression|null = null;
-        var repeat: ast.Expression|null = null;
-        const params = tagDef.params, anyAttrib = tagDef.anyAttrib;
-        const binds: ast.BindingMap = new Map();
-        for (let [key,val] of attribs) {
-          // directives.
-          // TODO: custom directive lookups.
-          if (key === 'if') {
-            condition = compileExpression(val, reconstitute(tag,attribs)+'> in: '+filename);
-          } else if (key === 'repeat') {
-            repeat = compileExpression(val, reconstitute(tag,attribs)+'> in: '+filename);
-          } else {
-            const pb = params.get(key);
-            if (!pb && !anyAttrib) {
-              warn('unrecognised "'+key+'" attribute on tag was ignored: '+reconstitute(tag,attribs)+'> in: '+filename);
-            }
-            // TODO: use pb to impose type-checks on bindings.
-            // TODO: push these in order to a list.
-            binds.set(key, parseText(val, "in attribute '"+key+"' of "+reconstitute(tag,attribs)+"> in "+filename));
-          }
+        default: {
+          buildCustomTagOrDomTag(tpl, node, outNodes, customTags);
+          break;
         }
-
-        // FIXME: buildTagDefn needs to be in a scope that contains the 'repeat' variable, if any.
-        const childNodes: ast.TplNode[] = [];
-        buildTagDefn(tpl, node.children, childNodes, customTags);
-
-        var appendNode: ast.TplNode;
-        if (anyAttrib) {
-          // standard DOM tag: wrap the child nodes; embed within any condition/repeat.
-          appendNode = new ast.TplTag(tag, binds, childNodes);
-        } else {
-          // custom tag: capture any child nodes for <content> inside the custom tag,
-          // and inline a copy of the custom tag here within any condition/repeat.
-          appendNode = new ast.CustomTag(tagDef, binds, childNodes);
-        }
-
-        // wrap the resulting node within any condition/repeat and append it to the template.
-        if (repeat != null) {
-          appendNode = new ast.TplRepeat('TODO', repeat, [appendNode]);
-        }
-        if (condition != null) {
-          appendNode = new ast.TplCond(condition, [appendNode]);
-        }
-        outNodes.push(appendNode);
       }
     } else {
       error('unexpected node <'+node.tag+'> in: '+filename);
     }
   }
 }
-
-
-// Controller.
-
-function toJSON(data:any) {
-  const seen: Set<any> = new Set();
-  function debugReplacer(key:any, val:any) {
-    if (typeof(val)==='object') {
-      if (seen.has(val)) {
-        return '#ref';
+      
+function buildCustomTagOrDomTag(tpl:ast.Template, node:ast.Tag, outNodes:ast.TplNode[], customTags:ast.DefnMap) {
+  const filename = tpl.filename;
+  // resolve custom tag to its template so we can recognise its parameters.
+  // warn if it's not a standard html tag and doesn't match a custom template.
+  // TODO: find imports as a pre-pass, so import can be after the first use,
+  // or register a proxy with a list of use-sites for reporting later.
+  const tag = node.tag;
+  let tagDef = customTags.get(tag);
+  if (!tagDef) {
+    if (!html5tags.has(tag)) {
+      // not a valid HTML5 tag.
+      if (deprecatedTags.has(tag)) {
+        log('lint: tag is deprecated in HTML5: '+reconstitute(node)+' in: '+filename);
+      } else {
+        error('custom tag <'+tag+'> is not defined (or imported) in '+filename);
       }
-      seen.add(val);
     }
-    if (val instanceof Map || val instanceof Set) {
-      return [...val];
-    }
-    return val;
+    tagDef = plainDomTag;
   }
-  return JSON.stringify(data,debugReplacer,2);
+
+  // find all attributes that contain a binding expression and compile those expressions.
+  // warn if it's not a standard html attribute and doesn't match a custom attribute.
+  // also warn if it is a standard attribute on a tag that doesn't allow those.
+  var condition: ast.Expression|null = null;
+  var repeat: ast.Expression|null = null;
+  var repeatName: string|null = null;
+  const params = tagDef.params, anyAttrib = tagDef.anyAttrib;
+  const binds: ast.BindingMap = new Map();
+  for (let [key,val] of node.attribs) {
+    // directives.
+    // TODO: custom directive lookups.
+    if (key === 'if') {
+      condition = compileExpression(val, reconstitute(node)+' in: '+filename);
+    } else if (key === 'repeat') {
+      const terms = val.split(' in ');
+      if (terms.length !== 2) {
+        error('repeat attribute must be of the form repeat="x in y" in '+reconstitute(node)+' in: '+filename);
+      } else {
+        repeatName = trim(terms[0]);
+        const from = trim(terms[1]);
+        repeat = compileExpression(from, reconstitute(node)+' in: '+filename);
+      }
+    } else {
+      const pb = params.get(key);
+      if (pb == null && !anyAttrib) {
+        warn('unrecognised "'+key+'" attribute on tag was ignored: '+reconstitute(node)+' in: '+filename);
+      } else {
+        // TODO: use pb to impose type-checks on bindings.
+        // TODO: push these in order to a list.
+        binds.set(key, parseAttribute(val, 'in attribute "'+key+'" of '+reconstitute(node)+' in '+filename));
+      }
+    }
+  }
+  // add defaults for any bindings that were not specified.
+  for (let [key,val] of params) {
+    if (!binds.has(key)) {
+      binds.set(key, new ast.Text(val, filename));
+    }
+  }
+
+  // FIXME: buildTagDefn needs to be in a scope that contains the 'repeat' variable, if any.
+  const childNodes: ast.TplNode[] = [];
+  buildTagDefn(tpl, node.children, childNodes, customTags);
+
+  var appendNode: ast.TplNode;
+  if (anyAttrib) {
+    // standard DOM tag: wrap the child nodes; embed within any condition/repeat.
+    appendNode = new ast.TplTag(tag, binds, childNodes);
+  } else {
+    // custom tag: capture any child nodes for <content> inside the custom tag,
+    // and inline a copy of the custom tag here within any condition/repeat.
+    appendNode = new ast.CustomTag(tagDef, binds, childNodes);
+  }
+
+  // wrap the resulting node within any condition/repeat and append it to the template.
+  if (repeat != null && repeatName != null) {
+    appendNode = new ast.TplRepeat(repeatName, repeat, [appendNode]);
+  }
+  if (condition != null) {
+    appendNode = new ast.TplCond(condition, [appendNode]);
+  }
+  outNodes.push(appendNode);
 }
+
+
+// Transforms.
 
 function inlineFontFaceTransform(hostTag: ast.Tag, filename:string) {
   // move @font-face directives from all CSS files and <style> tags to the specified <style> tag.
@@ -593,6 +706,51 @@ function inlineFontFaceTransform(hostTag: ast.Tag, filename:string) {
   }
 }
 
+function componentStylesTransform(hostTag: ast.Tag, filename:string) {
+  // move inline component styles from all components to the specified <style> tag.
+  const hostStyles = hostTag.sheet && hostTag.sheet.ast;
+  if (hostStyles && hostStyles.type === 'StyleSheet' && hostStyles.children) {
+    for (let sheet of allStyleSheets) {
+      if (sheet.fromComponent) {
+        const styles = sheet.ast;
+        if (styles && styles.type === 'StyleSheet' && styles.children) {
+          const children = styles.children;
+          children.each(function(rule, listItem){
+            children.remove(listItem); // NB. remove updates the 'each' iterator.
+            hostStyles.children.append(listItem); // take ownership of ListItem.
+          });
+        } else {
+          error('component-styles: <style> tag is invalid in: '+sheet.filename);
+        }
+      }
+    }
+  } else {
+    error('component-styles: <style> tag is invalid in: '+filename);
+  }
+}
+
+
+// Controller.
+
+function toJSON(data:any) {
+  const seen: Set<any> = new Set();
+  function debugReplacer(key:any, val:any) {
+    if (typeof(val)==='object') {
+      if (seen.has(val)) {
+        return '#ref';
+      }
+      seen.add(val);
+    }
+    if (val instanceof Map || val instanceof Set) {
+      return [...val];
+    }
+    return val;
+  }
+  return JSON.stringify(data,debugReplacer,2);
+}
+
+const outDir = 'build';
+
 export function compileTarget(filename:string) {
   // phase 1: parse the main template and all imported templates.
   const fullPath = path.resolve(filename);
@@ -612,19 +770,37 @@ export function compileTarget(filename:string) {
   if (inlineFontFace != null) {
     inlineFontFaceTransform(inlineFontFace, filename);
   }
+  if (componentStyles != null) {
+    componentStylesTransform(componentStyles, filename);
+  }
   // phase 2: compile each custom tag defined in each template.
   for (let tpl of templateQueue) {
     buildTagsInTpl(tpl);
   }
-  fs.writeFileSync('out/index.json', toJSON(mainTpl), 'utf8');
-  const htmlTag = mainTpl.tags.get('html');
-  if (htmlTag) {
-    const html = generateHTML(htmlTag);
-    fs.writeFileSync('out/index.html', html, 'utf8');
-  } else {
-    error('the main template must contain a <html> tag entry-point: '+filename);
+  // load test data.
+  var knownData: any = {}; // from <link rel="test-data">
+  if (testDataUrl) {
+    const dataFile = path.resolve(path.dirname(filename), testDataUrl);
+    if (!fs.existsSync(dataFile)) {
+      error('not found: '+dataFile+' imported from '+filename);
+    } else {
+      knownData = JSON.parse(fs.readFileSync(dataFile, 'utf8'));
+    }
   }
-  if (numWarnings) log(`${numWarnings} warning${numWarnings>1?'s':''}.`);
-  if (numErrors) log(`${numErrors} error${numErrors>1?'s':''}.`);
-  //fs.writeFileSync('out/binds.js', JSON.stringify(decl.binds), 'utf8');
+  mkdirp(outDir, (err)=>{
+    if (err) {
+      return error(`cannot create directory: ${outDir}`);
+    }
+    fs.writeFileSync(`${outDir}/index.json`, toJSON(mainTpl), 'utf8');
+    const htmlTag = mainTpl.tags.get('html');
+    if (htmlTag) {
+      const html = generateHTML(htmlTag, knownData);
+      fs.writeFileSync(`${outDir}/index.html`, html, 'utf8');
+    } else {
+      error('the main template must contain a <html> tag entry-point: '+filename);
+    }
+    if (numWarnings) log(`${numWarnings} warning${numWarnings>1?'s':''}.`);
+    if (numErrors) log(`${numErrors} error${numErrors>1?'s':''}.`);
+    //fs.writeFileSync(`${outDir}/binds.js`, JSON.stringify(decl.binds), 'utf8');
+  });
 }

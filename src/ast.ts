@@ -25,8 +25,8 @@ export class Fragment implements Element {
 export class Tag implements Element {
   children: Node[] = [];
   sheet: StyleSheet|null = null; // optional style-sheet to inline.
-  //elide: boolean = false;
-  constructor(readonly tag:string, public attribs:AttrMap=new Map()) {}
+  elide: boolean = false;
+  constructor(public tag:string, public attribs:AttrMap=new Map()) {}
 }
 
 export class Text implements Node {
@@ -39,11 +39,14 @@ export class Text implements Node {
 export type TextTPlNode = Text | Expression;
 export type BindingNode = Text | Expression | TextTemplate;
 export type BindingMap = Map<string, BindingNode>;
-export type TplNode = Text | Expression | TextTemplate | TplTag | CustomTag | TplCond | TplRepeat;
+export type TplNode = Text | Expression | TplTag | CustomTag | TplCond | TplRepeat;
 export type DefnMap = Map<string, TagDefn>;
 
 export class Expression {
-  constructor(public source:string, public where:string) {}
+  path: string[];
+  constructor(public source:string, public where:string) {
+    this.path = source.split('.');
+  }
 }
 
 export class TextTemplate {
@@ -56,6 +59,7 @@ export interface Loader {
 }
 
 export class StyleSheet implements Loader {
+  fromComponent: boolean = false;
   usedFrom: string[] = [];
   ast: CSSTree.Node|null = null; // parsed csstree AST.
   sheetsImported: StyleSheet[] = [];
@@ -81,6 +85,13 @@ export class TagDefn {
   nodes: TplNode[] = [];
   outTag: string = '';
   params: AttrMap = new Map();
+  tplsImported: Template[] = [];  // templates imported inside this component.
+  componentsUsed: TagDefn[] = []; // components used in this component (NB. cannot be conditional!)
+  metaTags: Tag[] = [];    // <meta> within the component.
+  linkTags: Tag[] = [];    // <link> within the component.
+  styleTags: Tag[] = [];   // <style> within the component.
+  headScripts: Tag[] = []; // <script move-to-head> within the component.
+  footScripts: Tag[] = []; // <script move-to-body> within the component.
   constructor(public tpl:Template, public tagName:string, public rootNodes:Node[]=[], public anyAttrib:boolean=false) {
   }
 }

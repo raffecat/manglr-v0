@@ -1,6 +1,6 @@
 {
   "name": "manglr",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "An HTML-first, component-friendly web compiler",
   "scripts": {
     "test": "mocha ./test"
@@ -19,19 +19,19 @@
     "modelview"
   ],
   "author": "RaffeCat",
-  "license": "BSD",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/raffecat/manglr/issues"
   },
-  "devDependencies": {
-    "uglify-js": "~2.3.6"
-  },
+  "devDependencies": {},
   "dependencies": {
     "@types/htmlparser2": "^3.7.31",
+    "@types/mkdirp": "^0.5.1",
     "@types/node": "^8.0.50",
+    "@types/yargs": "^8.0.2",
     "css-tree": "^1.0.0-alpha22",
     "htmlparser2": "^3.9.2",
-    "postcss": "^6.0.13",
-    "postcss-cssnext": "^3.0.2"
+    "mkdirp": "^0.5.1",
+    "yargs": "^10.0.3"
   }
 }

@@ -1,6 +1,6 @@
 'use strict';
 
-import { TagDefn, TplNode, Text, Expression, TextTemplate, TplTag, CustomTag, TplCond, TplRepeat } from './ast';
+import { TagDefn, TplNode, TextTPlNode, Text, Expression, TextTemplate, TplTag, CustomTag, TplCond, TplRepeat } from './ast';
 
 const log = console.log;
 
@@ -12,88 +12,130 @@ function attrEscape(text:string) {
   return htmlEscape(text).replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
-export function generateHTML(mainTpl: TagDefn) {
+function evaluateExpression(expr: Expression, bindings: any) {
+  // resolve the expression using a set of local bindings.
+  let value:any = bindings;
+  for (let name of expr.path) {
+    if (value instanceof Map) {
+      value = value.get(name);
+    } else {
+      value = (value||{})[name];
+    }
+    if (value instanceof Text) {
+      value = value.text;
+    } else if (value instanceof Expression) {
+      value = evaluateExpression(value, bindings);
+    }
+  }
+  return value;
+}
+
+function evaluateTextTemplate(nodes: TextTPlNode[], bindings: any) {
+  let text = '';
+  for (let child of nodes) {
+    if (child instanceof Text) {
+      text += child.text;
+    } else if (child instanceof Expression) {
+      const result:any = evaluateExpression(child, bindings);
+      if (result != null && typeof(result) !== 'object') {
+        text += result.toString();
+      }
+    }
+  }
+  return text;
+}
+
+export function generateHTML(mainTpl: TagDefn, bindings: any) {
   const dom = ['<!DOCTYPE html>\n']; // captured in walkNodes closure.
-  function walkNodes(nodelist: TplNode[]) {
+  function walkNodes(nodelist: TplNode[], bindings: any) {
     for (let node of nodelist) {
       if (node instanceof Text) {
+
+        // literal body text.
         dom.push(node.markup ? node.text : htmlEscape(node.text));
-      } else if (node instanceof TextTemplate) {
-        // nodes are: Text | Expression | TextTemplate.
-        for (let child of node.nodes) {
-          if (child instanceof Text) {
-            dom.push(child.text);
-          } else {
-            const code = (child as Expression).source;
-            dom.push('<manglr bind="',attrEscape(code),'"></manglr>');
-          }
-        }
+
       } else if (node instanceof Expression) {
-        const code = node.source;
-        dom.push('<manglr bind="',attrEscape(code),'"></manglr>');
+
+        // an expression that yields body text (ignored otherwise)
+        const result:any = evaluateExpression(node, bindings);
+        if (result != null && typeof(result) !== 'object') {
+          dom.push(htmlEscape(result.toString()));
+        }
+
       } else if (node instanceof TplTag) {
-        // resolve and reduce attribute-binding expressions using incoming arguments.
-        // some will fold down to constants; others will yield view-expressions.
-        // for server-rendering, evaluate view-expressions and pre-render the result,
-        // while also tagging if/each nodes with unique ids for client-side mounting.
-        // for static-hosting, 
+
+        // a standard HTML tag with attributes that can be bound to expressions.
         dom.push('<'+node.tag);
-        const exprs: {name:string,value:string}[] = [];
         for (let [name,value] of node.binds) {
           if (value instanceof Text) {
-            // literal attribute value.
-            dom.push(' '+name);
-            if (value.text.length > 0) dom.push('="',attrEscape(value.text),'"');
+            // literal attribute text.
+            dom.push(' '+name+'="', attrEscape(value.text), '"');
           } else if (value instanceof TextTemplate) {
-            // TODO: might resolve down to literal text.
-            const children = value.nodes;
-            let code = '';
-            for (let child of children) {
-              if (child instanceof Text) {
-                code += "'" + child.text.replace(/'/g, "\\'") + "'";
-              } else {
-                const expr = (child as Expression);
-                code += '+(' + expr.source + ')';
-              }
-            }
-            exprs.push({ name:name, value:'('+code+')' });
+            // one or more expressions that yield text (ignored otherwise) intermixed with literal text.
+            const text = evaluateTextTemplate(value.nodes, bindings);
+            dom.push(' '+name+'="', attrEscape(text), '"');
           } else if (value instanceof Expression) {
-            // TODO: might resolve down to literal text.
-            let code = value.source;
-            exprs.push({ name:name, value:'('+code+')' });
+            // a single expression that yields text OR boolean (ignored otherwise)
+            const result:any = evaluateExpression(value, bindings);
+            if (typeof(result) === 'boolean') {
+              if (result === true) {
+                dom.push(' '+name);
+              }
+            } else if (result != null && typeof(result) !== 'object') {
+              dom.push(' '+name+'="', attrEscape(result.toString()), '"');
+            }
           } else {
             log("internal error: bad binding '"+name+"' in generateHTML: "+JSON.stringify(node));
           }
         }
-        // encode all binding expressions.
-        if (exprs.length) {
-          for (let expr of exprs) {
-            dom.push(' m-bind-'+expr.name+'="', attrEscape(expr.value), '"');
-          }
-        }
         dom.push('>');
         // recurse into child nodes.
-        walkNodes(node.children);
+        walkNodes(node.children, bindings);
         dom.push('</'+node.tag+'>');
+
       } else if (node instanceof CustomTag) {
-        // inline the contents of the custom tag template.
+
+        // TODO: pass in captured <contents>
         if (node.capture.length) {
           log("unused child nodes in custom tag <"+node.defn.tagName+"> : "+JSON.stringify(node.capture));
         }
-        walkNodes(node.defn.nodes);
+
+        // TODO: need to evaluate the bound expressions here,
+        // and pass a map of those results into the component.
+
+        // recurse into the component using the bindings on this custom-tag.
+        walkNodes(node.defn.nodes, node.binds);
+
       } else if (node instanceof TplCond) {
-        dom.push('<if cond="'+node.condExpr.source+'">');
-        walkNodes(node.children);
-        dom.push('</if>');
+
+        const result:any = evaluateExpression(node.condExpr, bindings);
+        if (result) {
+          walkNodes(node.children, bindings);
+        }
+
       } else if (node instanceof TplRepeat) {
-        dom.push('<each in="'+node.eachExpr.source+'">');
-        walkNodes(node.children);
-        dom.push('</each>');
+
+        const result:any = evaluateExpression(node.eachExpr, bindings);
+        // TODO: Array or a Store type?
+        if (result instanceof Array) {
+          // TODO: an Object or a Map?
+          const bindName = node.bindName;
+          const inner = bindings || {};
+          const oldBind = (inner instanceof Map) ? inner.get(bindName) : inner[bindName];
+          for (let obj of result) {
+            if (inner instanceof Map) { inner.set(bindName, obj); }
+            else { inner[bindName] = obj; }
+            walkNodes(node.children, inner);
+          }
+          if (inner instanceof Map) { inner.set(bindName, oldBind); }
+          else { inner[bindName] = oldBind; }
+        }
+
       } else {
         log("internal error: bad Node in generateHTML: "+JSON.stringify(node));
       }
     }
   }
-  walkNodes(mainTpl.nodes);
+  walkNodes(mainTpl.nodes, bindings);
   return dom.join("");
 }

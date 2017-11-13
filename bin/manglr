@@ -1,2 +1,2 @@
 #!/usr/bin/env node
-require('../build/manglr.js').compileTarget(process.argv[2]);
+require('../lib/manglr.js').compileTarget(process.argv[2]);
