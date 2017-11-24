@@ -75,6 +75,9 @@ export class Template implements Loader {
   tags: DefnMap = new Map();
   tplsImported: Template[] = [];
   sheetsImported: StyleSheet[] = [];
+  inlineFontFace: Tag|null = null; // first style tag encountered with inline-fonts.
+  componentStyles: Tag|null = null; // first style tag encountered with component-styles.
+  testDataUrl: string = '';
   constructor(public filename:string, usedIn:string='') {
     if (usedIn) this.usedFrom.push(usedIn);
   }

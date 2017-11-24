@@ -1,0 +1,7 @@
+*.js linguist-vendored
+bin/* linguist-vendored
+refs/* linguist-vendored
+notes/* linguist-vendored
+demos/* linguist-vendored
+test/*.js linguist-vendored
+
