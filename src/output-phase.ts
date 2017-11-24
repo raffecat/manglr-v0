@@ -186,7 +186,7 @@ function buildTagDefn(ps:ParserState, tpl:ast.Template, nodelist:ast.Node[], out
           // TODO: insert markup placed inside the custom tags.
           // TODO: <content allow="img label my-tag" allow-text /> to restrict contents.
           // TODO: ^ want to be able to redefine <img> as a custom component within <contents>
-          error("the <contents> tag is not implemented yet");
+          ps.error("the <contents> tag is not implemented yet");
           break;
         }
         default: {
