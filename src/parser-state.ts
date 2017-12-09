@@ -1,6 +1,9 @@
+import { loadTemplate } from './component-phase';
+import { loadStyleSheet } from './parse-css';
 import * as ast from './ast';
 import * as path from 'path';
 import * as URL from 'url';
+import queue = require('queue');
 
 type TemplateMap = Map<string, ast.Template>;
 type StyleSheetMap = Map<string, ast.StyleSheet>;
@@ -9,14 +12,16 @@ const hasProtocol = /^[A-Za-z]:/;
 
 export class ParserState {
 
+  readonly queue: any = queue(); // async jobs.
+
   readonly templateCache: TemplateMap = new Map(); // global template cache: template file -> parsed template object.
-  readonly templateQueue: ast.Template[] = []; // global queue of templates to load and parse.
+  readonly allTemplates: ast.Template[] = []; // global list of templates to compile.
 
   readonly cssCache: StyleSheetMap = new Map(); // global css cache.
   readonly loadedStyleSheets: ast.StyleSheet[] = []; // global queue of css files to load and parse.
 
   // FIXME: use of this is always wrong: the set of style-sheets that matter
-  // in any given context depend on the set of components actually used.
+  // in any top-level html-page depend on the set of components actually used.
   readonly allStyleSheets: ast.StyleSheet[] = []; // global set of style sheets.
 
   debugLevel: number = 0;
@@ -65,8 +70,11 @@ export class ParserState {
       return cachedTpl;
     }
     const tpl = new ast.Template(fullPath, usedFrom);
+    this.allTemplates.push(tpl);
     this.templateCache.set(fullPath, tpl);
-    this.templateQueue.push(tpl);
+    this.queue.push((cb:any) => {
+      loadTemplate(this, tpl, cb);
+    });
     return tpl;
   }
 
@@ -78,11 +86,14 @@ export class ParserState {
       cached.usedFrom.push(usedFrom);
       return cached;
     }
-    const proxy = new ast.StyleSheet(absUrl, usedFrom);
-    this.allStyleSheets.push(proxy);
-    this.loadedStyleSheets.push(proxy);
-    this.cssCache.set(absUrl, proxy);
-    return proxy;
+    const sheet = new ast.StyleSheet(absUrl, usedFrom);
+    this.allStyleSheets.push(sheet);
+    this.loadedStyleSheets.push(sheet);
+    this.cssCache.set(absUrl, sheet);
+    this.queue.push((cb:any) => {
+      loadStyleSheet(this, sheet, cb);
+    });
+    return sheet;
   }
 
 }

@@ -2,17 +2,50 @@ import * as fs from 'fs';
 import * as ast from './ast';
 import { ParserState } from './parser-state';
 import csstree = require('css-tree');
+import fetch = require('fetch'); // supports redirects with cookies, iconv to utf-8.
+
+const version:string = JSON.parse(fs.readFileSync(__dirname+'/../package.json','utf8')).version;
 
 const absoluteUrlPattern = /^[A-Za-z]:|^\//;
 
-export function loadStyleSheet(ps:ParserState, sheet:ast.StyleSheet) {
-  const filename = sheet.filename, usedFrom: string|null = sheet.usedFrom[0];
-  if (!fs.existsSync(filename)) {
-    ps.error('not found: '+filename+(usedFrom ? ' imported from '+usedFrom : ''));
-    return; // cannot load.
+const fetchUrlOptions = {
+  asyncDnsLoookup: true,
+  maxResponseLength: 4096 * 1048576, // 4 GB.
+  headers: {
+    "User-Agent": "manglr/"+version
   }
-  const source = fs.readFileSync(filename, 'utf8');
-  parseStyleSheet(ps, sheet, source);
+};
+
+export function loadStyleSheet(ps:ParserState, sheet:ast.StyleSheet, cb:any) {
+  if (ps.debugLevel) ps.debug(`=> loadStyleSheet: ${sheet.filename}`);
+  const usedFrom: string|null = sheet.usedFrom[0];
+  const url = sheet.filename;
+  if (/^https?:\/\/[^\/]+/.test(url)) {
+    // ^ otherwise fetch crashes at Resolver.queryA "name" argument must be a string.
+    console.log("downloading: "+url);
+    fetch.fetchUrl(url, fetchUrlOptions, function (err:any, meta:{status:number}, body:string) {
+      if (err || meta.status !== 200) {
+        ps.error('download failed: '+url+(usedFrom ? ' imported from '+usedFrom : ''));
+      } else {
+        parseStyleSheet(ps, sheet, body);
+      }
+      cb();
+    });
+  } else {
+    const filename = url.replace(/\?.*$/,'').replace(/^file:\/\//,''); // remove query-string and 'file://' prefix.
+    console.log("reading: "+filename);
+    fs.readFile(filename, 'utf8', function (err:any, source:string) {
+      if (err) {
+        const message = err.code==='ENOENT' ? `not found: ${filename}` : `${err}`;
+        ps.error(message+(usedFrom ? ' imported from '+usedFrom : ''));
+        return cb();
+      } else {
+        const source = fs.readFileSync(filename, 'utf8');
+        parseStyleSheet(ps, sheet, source);
+        cb();
+      }
+    });
+  }
 }
 
 export function parseStyleSheet(ps:ParserState, sheet:ast.StyleSheet, source:string) {
@@ -20,13 +53,13 @@ export function parseStyleSheet(ps:ParserState, sheet:ast.StyleSheet, source:str
   sheet.ast = csstree.parse(source, {
     context: 'stylesheet',
     positions: true,
-    tolerant: false,
     filename: sheet.filename,
-    offset: 0, // node.offset, // FIXME: node must have these too.
+    offset: 0, // node.offset, // FIXME: need location from HTML parser.
     line: 1, // node.line,
     column: 1, // node.column,
-    onParseError: function(error:{message:string}) {
-      ps.error("CSS parse error: "+error.message+" in "+sheet.filename);
+    tolerant: true, // activates onParseError handler!
+    onParseError: function(error:any) {
+      ps.error(`${error} in ${sheet.filename}`);
     }
   });
 

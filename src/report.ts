@@ -3,14 +3,15 @@ import { ParserState } from './parser-state';
 
 export function reconstitute(node:ast.Tag) {
   let res = '<'+node.tag;
-  for (let [key,val] of node.attribs) {
+  for (let key of Object.keys(node.attribs)) {
+    const val = node.attribs.get(key);
     res = res + ' ' + key + '="'+val+'"'; // NB. can include un-escaped quotes.
   }
   return res+'>';
 }
 
 export function reportUnused(ps:ParserState, node:ast.Tag, allow:Set<string>, filename:string) {
-  for (let [key,_] of node.attribs) {
+  for (let key of Object.keys(node.attribs)) {
     if (!allow.has(key)) {
       ps.warn('unrecognised "'+key+'" attribute was ignored: '+reconstitute(node)+' in: '+filename);
     }

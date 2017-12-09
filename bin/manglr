@@ -1,2 +1,12 @@
 #!/usr/bin/env node
-require('../lib/manglr.js').compileTarget(process.argv[2]);
+if (!require('semver').gte(process.version, '0.9.4')) {
+  console.error('E: node.js version is too old\naborted.'); // setEncoding, https, node.js bugs.
+  return;
+}
+require('source-map-support').install();
+var filename = process.argv[2] || 'index.html';
+if (!filename) {
+  console.error('Usage: manglr <html-file>');
+  return;
+}
+require('../lib/manglr.js').compileTarget(filename);

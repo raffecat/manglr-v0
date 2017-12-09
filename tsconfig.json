@@ -1,9 +1,12 @@
 {
+    "include": [
+        "./types/*.d.ts"
+    ],
     "files": [
-        "src/css-tree.d.ts",
         "src/manglr.ts"
     ],
     "compilerOptions": {
+        "inlineSourceMap": true,
         "alwaysStrict": true,
         "noImplicitAny": true,
         "strictNullChecks": true,

@@ -177,7 +177,8 @@ function buildTagDefn(ps:ParserState, tpl:ast.Template, nodelist:ast.Node[], out
         case 'style': {
           // deferred until all style-sheets have loaded.
           // output CSS into an inline style tag.
-          if (node.sheet) {
+          // StyleSheet lacks an 'ast' if the file could not be loaded.
+          if (node.sheet && node.sheet.ast) {
             appendStyles(ps, node.sheet, outNodes, filename);
           }
           break;

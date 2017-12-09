@@ -6,8 +6,8 @@ import { html5 as html5tags } from './dom-spec';
 import { reconstitute, reportUnused, assertEmpty } from './report';
 import { parseStyleSheet } from './parse-css';
 
-const validForStyleTag = new Set(['inline-fonts','component-styles']);
-const validForLinkCSS = new Set(['rel','href','inline','bundle']);
+const validForStyleTag = new Set(['type', 'inline-fonts', 'component-styles']);
+const validForLinkCSS = new Set(['rel', 'href', 'inline', 'bundle']);
 const validForImportTag = new Set(['src']);
 
 // A pre-pass to find <import> and <component> tags (to load HTML)
@@ -106,7 +106,10 @@ function parseLinkRelTag(ps:ParserState, tpl:ast.Template, defn:ast.TagDefn, nod
     if (node.attribs.get('inline') != null) {
       if (ps.debugLevel) ps.debug('=> replacing '+reconstitute(node)+' with contents of "'+href+'" in: '+filename);
       node.tag = 'style';
+      node.attribs.delete('inline');
       node.attribs.delete('rel');
+      node.attribs.delete('href');
+      // attach the sheet to be inlined during the output phase.
       node.sheet = proxy;
     } else {
       // not inline
@@ -147,6 +150,7 @@ function parseStyleTag(ps:ParserState, tpl:ast.Template, defn:ast.TagDefn, node:
   node.sheet = sheet;
 
   if (!tpl.isMain) {
+    // tag the sheet for the 'component-styles' directive.
     sheet.fromComponent = true;
   }
 
@@ -187,7 +191,7 @@ function findComponents(ps:ParserState, tpl:ast.Template, defn:ast.TagDefn, node
         case 'link':
           const rel = node.attribs.get('rel');
           if (!rel) {
-            ps.warn('missing "ref" attribute on tag: '+reconstitute(node)+' in: '+tpl.filename);
+            ps.warn('missing "rel" attribute on tag: '+reconstitute(node)+' in: '+tpl.filename);
           } else if (rel === 'test-data') {
             parseTestDataTag(ps, tpl, defn, node);
           } else if (rel === 'stylesheet') {
@@ -245,19 +249,25 @@ function parseTemplate(ps:ParserState, tpl:ast.Template, rootNodes:ast.Node[]) {
 
 // TODO: <meta charset> handling: convert components to the main template charset?
 
-export function loadTemplate(ps:ParserState, tpl:ast.Template) {
+export function loadTemplate(ps:ParserState, tpl:ast.Template, cb:any) {
   // Load and compile a template from its source file.
+  if (ps.debugLevel) ps.debug(`=> loadTemplate: ${tpl.filename}`);
   const filename = tpl.filename;
-  const usedFrom: string|null = tpl.usedFrom[0];
-  if (!fs.existsSync(filename)) {
-    ps.error('not found: '+filename+(usedFrom ? ' imported from '+usedFrom : ''));
-    return; // cannot load.
-  }
-  const source = fs.readFileSync(filename, 'utf8');
-  const doc = parseToDOM(source, filename);
-  if (tpl.isMain && !doc.hasDocType) {
-    // top-level documents must have a doctype.
-    ps.lint('missing <!DOCTYPE html> in '+filename);
-  }
-  parseTemplate(ps, tpl, doc.children);
+  console.log("reading: "+filename);
+  fs.readFile(filename, 'utf8', function (err:any, source:string) {
+    if (err) {
+      const usedFrom: string|null = tpl.usedFrom[0];
+      const message = err.code==='ENOENT' ? `not found: ${filename}` : `${err}`;
+      ps.error(message+(usedFrom ? ' imported from '+usedFrom : ''));
+      return cb();
+    } else {
+      const doc = parseToDOM(source, filename);
+      if (tpl.isMain && !doc.hasDocType) {
+        // top-level documents must have a doctype.
+        ps.lint('missing <!DOCTYPE html> in '+filename);
+      }
+      parseTemplate(ps, tpl, doc.children);
+      return cb();
+    }
+  });
 }
