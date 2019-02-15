@@ -1,0 +1,28 @@
+<forum-post post="">
+  <a id="{ post.id }"></a>
+  <div class="post corners">
+    <div class="forumAuthor">
+      <div class="icons">
+        <img if="post.user.founder" src="forum/images/founder.png" title="Founding member">
+        <a if="post.user.nanoId" target="_blank" href="http://nanowrimo.org/en/participants/{ post.user.nanoId }"><img src="forum/images/nano.png" title="NaNoWriMo Participant"></a>
+      </div>
+      <div class="nameplate">
+        <div class="avatar">
+          <a href="/profiles/{ post.user.slug }"><img if="post.user.avatar" src="{ post.user.avatar }"></a>
+        </div>
+        <div class="name"><a href="/profiles/{ post.user.slug }">{ post.user.name }</a></div>
+        <div>{ post.date }</div>
+      </div>
+    </div>
+    <div class="postBody">
+      <div class="postBodyInner corners">
+        <div class="g-body">{ post.content }</div>
+        <nav class="actions">
+          <a action="forum-reply { post }" title="Reply quoting this post"><img src="forum/images/quote.png"></a>
+          <a href="{ @router.url }#{ post.id }" class="permalink" title="Permanent link to this post">¶</a>
+        </nav>
+        <div class="clear"></div>
+      </div>
+    </div>
+  </div>
+</forum-post>

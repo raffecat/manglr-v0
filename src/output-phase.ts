@@ -81,23 +81,32 @@ function appendStyles(ps:ParserState, sheet:ast.StyleSheet, outNodes:ast.TplNode
 }
 
 function buildCustomTagOrDomTag(ps:ParserState, tpl:ast.Template, node:ast.Tag, outNodes:ast.TplNode[], customTags:ast.DefnMap) {
-  const filename = tpl.filename;
   // resolve custom tag to its template so we can recognise its parameters.
-  // warn if it's not a standard html tag and doesn't match a custom template.
-  // TODO: find imports as a pre-pass, so import can be after the first use,
-  // or register a proxy with a list of use-sites for reporting later.
+  const filename = tpl.filename;
   const tag = node.tag;
-  let tagDef = customTags.get(tag);
-  if (!tagDef) {
-    if (!html5tags.has(tag)) {
-      // not a valid HTML5 tag.
-      if (deprecatedTags.has(tag)) {
-        ps.lint('tag is deprecated in HTML5: '+reconstitute(node)+' in: '+filename);
-      } else {
-        ps.error('custom tag <'+tag+'> is not defined (or imported) in '+filename);
-      }
+  const importedTpl = node.tpl;
+  let tagDef;
+  if (importedTpl) {
+    // tag had an @import attribute specifying the template to import.
+    tagDef = importedTpl.tags.get(tag);
+    if (!tagDef) {
+      ps.error('custom tag <'+tag+'> is not defined in @import '+importedTpl.filename);
+      tagDef = plainDomTag;
     }
-    tagDef = plainDomTag;
+  } else {
+    // check if the tag-name is defined in any locally imported tag library.
+    tagDef = customTags.get(tag);
+    if (!tagDef) {
+      // MUST be a valid HTML5 tag-name, otherwise we'll report it undefined for safety.
+      if (!html5tags.has(tag)) {
+        if (deprecatedTags.has(tag)) {
+          ps.lint('tag is deprecated in HTML5: '+reconstitute(node)+' in: '+filename);
+        } else {
+          ps.error('custom tag <'+tag+'> is not defined in '+filename);
+        }
+      }
+      tagDef = plainDomTag;
+    }
   }
 
   // find all attributes that contain a binding expression and compile those expressions.
@@ -125,7 +134,7 @@ function buildCustomTagOrDomTag(ps:ParserState, tpl:ast.Template, node:ast.Tag, 
     } else {
       const pb = params.get(key);
       if (pb == null && !anyAttrib) {
-        ps.warn('unrecognised "'+key+'" attribute on tag was ignored: '+reconstitute(node)+' in: '+filename);
+        ps.warn('unrecognised "'+key+'" attribute on tag '+reconstitute(node)+' was ignored in: '+filename);
       } else {
         // TODO: use pb to impose type-checks on bindings.
         // TODO: push these in order to a list.
@@ -164,15 +173,40 @@ function buildCustomTagOrDomTag(ps:ParserState, tpl:ast.Template, node:ast.Tag, 
   outNodes.push(appendNode);
 }
 
+function normalizeEOL(text:string) {
+  if (nonWhiteSpace.test(text)) {
+    return text; // contains text content (might be in a 'white-space:pre' element)
+  }
+  const norm = text.replace(/\r/g,'\n');
+  let firstEOL = norm.indexOf('\n'); if (firstEOL<0) firstEOL = 0;
+  let lastEOL = norm.lastIndexOf('\n'); if (lastEOL<0) lastEOL = norm.length;
+  return norm.substr(0,firstEOL) + norm.substr(lastEOL);
+}
+
 function buildTagDefn(ps:ParserState, tpl:ast.Template, nodelist:ast.Node[], outNodes:ast.TplNode[], customTags:ast.DefnMap) {
   // phase 2: parse dom nodes and build the template.
   const filename = tpl.filename;
   for (let node of nodelist) {
     if (node instanceof ast.Text) {
+      // merge adjacent text nodes (caused by elided tags)
+      // remove blank lines between tags (often caused by elided tags)
+      let text = node.text;
+      if (!nonWhiteSpace.test(text)) {
+        if (outNodes.length > 0) {
+          const last = outNodes[outNodes.length-1];
+          if (last instanceof ast.Text && !nonWhiteSpace.test(last.text)) {
+            last.text = normalizeEOL(last.text + text);
+            continue;
+          }
+        }
+        text = normalizeEOL(text);
+      }
       // parse any embedded expressions in the text content.
-      parsePlaceholders(ps, node.text, outNodes, 'text node in '+filename);
+      parsePlaceholders(ps, text, outNodes, 'text node in '+filename);
     } else if (node instanceof ast.Tag) {
-      if (node.elide) continue;
+      if (node.elide) {
+        continue;
+      }
       switch (node.tag) {
         case 'style': {
           // deferred until all style-sheets have loaded.
@@ -184,7 +218,7 @@ function buildTagDefn(ps:ParserState, tpl:ast.Template, nodelist:ast.Node[], out
           break;
         }
         case 'contents': {
-          // TODO: insert markup placed inside the custom tags.
+          // TODO: insert markup placed inside the custom tags. <slot name="foo">?
           // TODO: <content allow="img label my-tag" allow-text /> to restrict contents.
           // TODO: ^ want to be able to redefine <img> as a custom component within <contents>
           ps.error("the <contents> tag is not implemented yet");
@@ -209,7 +243,7 @@ function customTagsForDefn(ps:ParserState, tpl:ast.Template, defn:ast.TagDefn):a
     customTags.set(name, defn);
   }
   // add the custom tags imported into this TagDefn.
-  // TODO: selective imports and renames.
+  // TODO: selective imports and renames?
   for (let srcTpl of defn.tplsImported) {
     for (let [name,defn] of srcTpl.tags) {
       // detect name conflicts.

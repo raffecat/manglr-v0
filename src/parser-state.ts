@@ -20,6 +20,8 @@ export class ParserState {
   readonly cssCache: StyleSheetMap = new Map(); // global css cache.
   readonly loadedStyleSheets: ast.StyleSheet[] = []; // global queue of css files to load and parse.
 
+  readonly allScripts: ast.Script[] = []; // global list of script tags.
+
   // FIXME: use of this is always wrong: the set of style-sheets that matter
   // in any top-level html-page depend on the set of components actually used.
   readonly allStyleSheets: ast.StyleSheet[] = []; // global set of style sheets.

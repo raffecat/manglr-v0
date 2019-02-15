@@ -1,0 +1,420 @@
+
+@font-face {
+    font-family: 'Artifika';
+    src: url('Artifika-Regular-webfont.eot');
+    src: url('Artifika-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('Artifika-Regular-webfont.woff') format('woff'),
+         url('Artifika-Regular-webfont.ttf') format('truetype'),
+         url('Artifika-Regular-webfont.svg#ArtifikaMedium') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+html, body {
+    background-color: #FFFFFF;
+}
+
+a, a:visited {
+    color: #47454a;
+}
+
+/* GENERAL HELPERS AND BASE SYLES */
+.shadow { -moz-box-shadow: 0 1px 2px #ddd; }
+.fleft { float: left; }
+.fright { float: right; }
+.clear { clear: both; }
+.hidden { display: none; }
+.center { text-align: center; margin: 0 auto; }
+.padding { padding: 1em; }
+.corners {
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+}
+
+/* LAYOUT */
+
+/* Global layout / Footer styles *
+ *
+ *  +------------------------
+ *  | .contentWrapper
+ *  |
+ *  |
+ *  |
+ *  |
+ *  | <push div>
+ *  +------------------------
+ *  | <footer>
+ *  |
+ *  +------------------------
+ *
+ */
+
+html, body { margin: 0px; padding: 0px; height: 100%; }
+
+footer, .push { height: 100px; }
+
+.contentWrapper {
+    min-height: 100%;
+    height: auto !important;
+    height: 100%;
+    margin: 0 auto -100px;
+}
+
+/* IE HTML5 support. */
+header, footer, aside, nav, article {
+    display: block;
+}
+
+.pageContent {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    font: 13px "Varela Round", Georgia, sans-serif;
+    color: #333332;
+    width: 950px;
+    margin: 0px auto 1em auto;
+    padding-top: 1em;
+}
+
+footer>div {
+    width: 950px;
+    margin: 0px auto;
+}
+
+footer {
+    background-color: #57568f;
+}
+
+footer nav {
+    float: left;
+    padding-top: 60px;
+    z-index: 100;
+    width: 640px;
+}
+
+footer nav a {
+    font: 12px "Varela Round", sans-serif;
+    font-weight: normal;
+    text-decoration: none;
+    margin: 5px;
+    color: white;
+}
+footer nav a:hover {
+    text-decoration: underline;
+}
+footer nav a:visited {
+    color: white;
+}
+
+footer .social {
+    float: left;
+    padding-top: 6px;
+}
+
+footer .social > div {
+    width: 100px;
+    padding: 3px;
+}
+
+.footerLogo {
+    float: right;
+    position: relative;
+    margin-top: -40px;
+    background: url(images/logo.png) 0 0 no-repeat;
+    width: 200px;
+    height: 130px;
+}
+
+.topbarWrapper {
+    background-color: #57568f;
+    font: 13px "Artifika", sans-serif;
+}
+
+.topbarWrapper .topImage {
+    width: 1023px;
+    height: 80px;
+    margin: 0 auto;
+    position: relative;
+    top: 0px;
+    background-image: url(images/headerArt.png);
+    background-position: 0 -74px;
+}
+.topbarWrapper .topMenu {
+    margin-top: -42px;
+    height: 40px;
+    background-image:url(images/menubar_bg50px.png);
+}
+
+.topbarWrapper nav {
+    position: relative;
+    width: 950px;
+    height: 40px;
+    line-height: 36px;
+    margin: 0 auto;
+    padding-left: 50px;
+}
+
+.topbarWrapper nav a {
+    vertical-align: middle;
+    margin-right: 1em;
+    color: #777;
+    text-decoration: none;
+}
+
+.topbarWrapper nav a:hover {
+    text-decoration: underline;
+}
+
+.topbarWrapper nav a.active {
+    color: white;
+}
+
+.topbarWrapper nav a.pangurpadText {
+    color: white;
+    font-size: 24px;
+    text-decoration: none;
+}
+
+
+/* general stuff */
+
+strong {
+    font-weight: bold;
+}
+
+h1,h2,h3 {
+    font-weight: bold;
+    color: #57568f;
+    letter-spacing: 0;
+
+}
+
+
+/* Used in forum.html */
+
+div.membersList {
+    border: 1px solid silver;
+    padding: 0 1em;
+}
+
+div.membersList img.defaultUserView {
+    float: left;
+    border: 1px solid silver;
+    margin: 3px;
+    width: 48px;
+    height: 48px;
+}
+
+.communityList h2 {
+    padding: 0px;
+}
+
+.communityList a:visited,
+.communityList a {
+    text-decoration: none;
+    color: #333;
+}
+
+.publication {
+    text-align: center;
+    border-bottom: 1px solid silver;
+    margin-bottom: 5px;
+    padding: 5px;
+}
+
+.publication h2.pubHeader {
+    color: #57568F;
+}
+.publication .eros {
+    font-size: 12px;
+    color: red;
+}
+
+.publication .erosPopup, .loginPopup {
+    cursor: pointer;
+}
+
+.publication .time {
+    margin-top: 5px;
+    font-size: 80%;
+}
+
+/* review styles */
+
+.ratings, .ratings * {
+    vertical-align: middle;
+    cursor: pointer;
+    text-align: center;
+}
+.ratings .count {
+    font-size: 80%;
+}
+
+.ratingDeets {
+    position: absolute;
+    top: 10;
+    left: 10;
+    border: 1px solid silver;
+    border-radius: 5px;
+    -webkit-box-shadow: 2px 2px 5px #333; /* Safari and Chrome */
+    box-shadow: 2px 2px 5px #333;
+    background: white;
+    z-index: 101;
+    width: 250px;
+    min-height: 100px;
+    padding-bottom: 5px;
+}
+.noteDialog {
+    -webkit-box-shadow: 2px 2px 5px #333; /* Safari and Chrome */
+    box-shadow: 2px 2px 5px #333;
+}
+
+.ratingDeets ._average_overall {
+    text-align: center;
+}
+.ratingDeets ._average_quality,
+.ratingDeets ._average_engagement,
+.ratingDeets ._average_originality,
+.ratingDeets ._average_plot {
+    float: left;
+    width: 120px;
+    text-align: center;
+}
+.ratingDeets h2 {
+    font-size: 80%;
+}
+
+.ratingDeets .count {
+    color: #777;
+    font-size: 80%;
+    text-align: center;
+}
+
+.tooltip {
+    position: absolute;
+    z-index: 100;
+    display:none;
+    background:transparent url(images/black_arrow_bottom.png);
+    font: 16px "Varela Round", sans-serif;
+    height:70px;
+    width:160px;
+    padding:30px 25px 25px;
+    color:#fff;
+}
+
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 1000;
+    background: url(images/overlay.png);
+    background: rgba(0,0,0,0.7);
+    background: -webkit-radial-gradient(rgba(127, 127, 127, 0.8), rgba(127, 127, 127, 0.8) 35%, rgba(0, 0, 0, 0.7));
+}
+
+.overOverlay {
+    padding: 10px;
+    z-index: 1001;
+    position: absolute;
+    top: 100px;
+    left: 50%;
+    margin-top: 100px;
+    width: 300px;
+    height: 60px;
+    background: white;
+    border: 1px solid silver;
+    -webkit-box-shadow: 0px 5px 80px #505050;
+    text-align: center;
+}
+
+.overOverlay h2 {
+    margin-top: 20px;
+}
+.overOverlay img.fleft {
+    height: 60px;
+}
+
+
+/* Common */
+
+.button.button {
+  display: inline-block;
+  cursor: pointer;
+  background-color: #56568e;
+  border: 1px solid #47454a;
+  padding: 0 5px;
+  height: 24px;
+  line-height: 24px;
+  font-family: "Lucida Sans",Verdana,sans-serif;
+  font-size: 12px;
+  font-weight: normal;
+  text-align: center;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+}
+.button.button:hover {
+  background-color: #fff;
+  color: #47454a;
+}
+.button .icon {
+  margin: 3px 0;
+  float: left;
+}
+
+.nav-btn.nav-btn {
+  display: block;
+  float: left;
+  cursor: pointer;
+  background-color: #56568e;
+  border: 1px solid #47454a;
+  margin-right: 6px;
+  color: white;
+  width: 16px;
+  height: 16px;
+  line-height: 16px;
+  font-family: "Lucida Sans",Verdana,sans-serif;
+  font-size: 12px;
+  font-weight: normal;
+  text-align: center;
+  color: white;
+  border-radius: 3px;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+}
+.nav-btn.nav-btn.active {
+  background: white;
+  color: #636567;
+  font-weight: bold;
+}
+
+.icon {
+  display: block;
+  width: 16px;
+  height: 16px;
+  overflow: hidden;
+  background-image: url(images/icons.png);
+}
+.icon.dark {
+  background-image: url(images/icons-dark.png);
+}
+.icon-arrow-first {
+  background-position: -240px -48px;
+}
+.icon-arrow-prev {
+  background-position: -96px -49px;
+}
+.icon-arrow-next {
+  background-position: -32px -49px;
+}
+.icon-arrow-last {
+  background-position: -208px -48px;
+}
+.icon-comment {
+  background-position: -128px -96px;
+}
+.icon-plus {
+  background-position: -16px -128px;
+}

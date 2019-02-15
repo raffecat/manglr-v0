@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Developer Wars</title>
+</head>
+</body>
+
+  <!-- Based on http://www.kittenwar.com/ -->
+
+  <div m-route="/" m-init="next-war">
+
+    <h2>Developer Wars</h2>
+
+    <div m-if="prev">
+      <h6>RESULTS</h6>
+      <img on-click="redir /devs/{prev.win.id}" m-src="{prev.win.profilePic}">
+      <img on-click="redir /devs/{prev.lose.id}" m-src="{prev.lose.profilePic}">
+      <p><img src="arrow-up.png"> WIN &middot; LOSE <img src="arrow-down.png"></p>
+      <p>Click pics for stats</p>
+      <p>{ prev.win.clicks / (prev.win.clicks + prev.lose.clicks) | round 0 }% of people agree that <a href="/devs/{prev.win.id}">{prev.win.name}</a> is more winningest than <a href="/devs/{prev.lose.id}">{prev.lose.name}</a>.</p>
+    </div>
+
+    <h5 m-if="prev">Next Developer War!</h5>
+    <h5>{dev1.name} vs. {dev2.name}</h5>
+    <div>
+      <img on-click="vote-for {dev1} | next-war" m-src="{dev1.profilePic}">
+      <img on-click="vote-for {dev2} | next-war" m-src="{dev2.profilePic}">
+    </div>
+    <p>Click on the winningest developer to decide the winner!!!</p>
+    <p>Can't decide? <a on-click="next-war">Click here</a> for a draw.</p>
+
+  </div>
+
+</body>
+</html>

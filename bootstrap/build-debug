@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+uglifyjs --compress --mangle --mangle-props debug,keep_quoted --warn -- src/manglr-bind.js >a.js
+

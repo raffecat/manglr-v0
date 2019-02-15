@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Welcome | Marko Demo</title>
+  </head>
+  <body>
+
+    <h1>Welcome to Marko!</h1>
+    <color-picker colors="
+      #333745
+      #E63462
+      #FE5F55
+      #C7EFCF
+      #EEF5DB
+      #00B4A6
+      #007DB6
+      #FFE972
+      #9C7671
+      #0C192B
+    "/>
+
+    <component "color-picker" colors=? local-state="selectedColor: {colors[0]}">
+      <div>
+        <color-picker-header
+          color={selectedColor} />
+        <color-picker-footer
+          colors={colors|split}
+          on-colorSelected(color: set selectedColor color)
+          on-hexInput(color: set selectedColor color) />
+      </div>
+    </component>
+
+    <component "color-picker-header" color=?>
+      <style>
+        .color-picker-header {
+          width: 200px;
+          height: 100px;
+          border-radius: 20px 20px 0 0;
+          font: 30px Arial;
+          display: flex;
+          flex-direction: column;
+          text-align: center;
+          color: white;
+        }
+        .color-picker-header > p {
+          padding-top: 1.15em;
+          margin: 0;
+        }
+      </style>
+      <div.color-picker-header style="background-color: {color}">
+        <p>{color}</p>
+      </div>
+    </component>
+
+    <component "color-picker-footer" colors=? colorSelected=? hexInput=?>
+      <style>
+        .color-picker-footer {
+          width: 200px;
+          height: 100px;
+          border-radius: 0px 0px 20px 20px;
+          font: 30px Arial;
+          display: flex;
+          flex-direction: column;
+          text-align: center;
+          color: white;
+          box-shadow: 0px 3px 5px #888888;
+        }
+        .color-picker-selection-container {
+          width: 75%;
+          margin: 5px 0px 0px 20px;
+        }
+        .color-picker-selection-container input {
+          margin-top: 8px;
+          border-radius: 0px 0px 0px 0px;
+          border-width: 0px 0px 1px 0px;
+          outline: none;
+          color: #A9A9A9;
+        }
+      </style>
+      <div.color-picker-footer>
+        <div.color-picker-selection-container>
+          <div {each color in colors}>
+            <color-picker-selection
+              color={color}
+              colorSelected={colorSelected} />
+          </div>
+          <input
+            placeholder="Hex value"
+            pattern="^#[0-9A-F]{6}$"
+            on-invalid={hexInput color=colors[0]}
+            on-valid={hexInput color=$tag.value} />
+        </div>
+      </div>
+    </component>
+
+    <component "color-picker-selection" color=? colorSelected=?>
+      <style>
+        .color-picker-selection {
+          width: 25px;
+          height: 25px;
+          border-radius: 5px 5px 5px 5px;
+          display: flex;
+          flex-direction: column;
+          margin: 5px 0px 0px 5px;
+          float: left;
+        }
+      </style>
+      <div.color-picker-selection
+        style="background-color: {color}"
+        on-click=(colorSelected color)
+        on-touchstart=(colorSelected color) />
+    </component>
+
+  </body>
+</html>

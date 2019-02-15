@@ -1,0 +1,106 @@
+
+// What's the difference between this and the MobX code below?
+// => models and templates can all be checked for correctness at compile-time.
+// => BUT that essentially requires a type-script compiler.
+
+model Article {
+  name: string;
+  price: number;
+}
+
+model ShoppingCartEntry {
+  article: Article;
+  amount: 1;
+  price => article.price * amount;
+  action remove => amount -= 1;
+  when amount < 1 => cart | remove this; // which cart?
+}
+
+model ShoppingCart {
+  entries: ShoppingCartEntry[];
+  total => entries.map(entry => entry.price).sum();
+  action remove entry => entries | remove entry;
+}
+
+action removeArticle (entry, cart) {
+  entry.amount -= 1;
+  if (entry.amount < 1) {
+    cart.entries.remove(entry);
+  }
+}
+
+<cart-view cart="ShoppingCart">
+  <ul id="cart">
+    { each entry in cart.entries with key entry.id }
+      <cart-entry-view entry={ entry } cart={ cart } />
+    { end each }
+  </ul>
+  <div><b>Total: <span id="total">{ cart.total }</span></b></div>
+</cart-view>
+
+<cart-entry-view entry="ShoppingCartEntry" cart="ShoppingCart">
+  <li>
+      <button onClick={ removeArticle entry cart }>&laquo;</button>
+      <span>{ entry.article.name }</span>
+      <span>{ entry.amount }</span>
+  </li>
+</cart-entry-view>
+
+
+
+-------------------[ the MobX code ]-------------------
+
+function Article(name, price) {
+    mobx.extendObservable(this, {
+        name: name,
+        price: price
+    });
+}
+
+function ShoppingCartEntry(article) {
+    mobx.extendObservable(this, {
+        article: article,
+        amount: 1,
+        price: function() {
+            return this.article ? this.article.price * this.amount : 0;
+        }
+    });
+}
+
+function ShoppingCart() {
+    mobx.extendObservable(this, {
+        entries: [],
+        total: function() {
+            return this.entries.reduce(function(sum, entry) {
+                return sum + entry.price;
+            }, 0);
+        }
+    });
+}
+
+var CartView = React.createClass({
+    render: function() {
+        function renderEntry(entry) {
+            return (<CartEntryView entry={entry} cart={this.props.cart} key={entry.id} />);
+        }
+        return (<div>
+            <ul id="cart">{this.props.cart.entries.map(renderEntry)}</ul>
+            <div><b>Total: <span id="total">{this.props.cart.total}</span></b></div>
+        </div>)
+    } 
+});
+
+var CartEntryView = React.createClass({
+    render: function() {
+        return (<li>
+            <button onClick={this.removeArticle}>&laquo;</button>
+            <span>{this.props.entry.article.name}</span>
+            <span>{this.props.entry.amount}</span>
+        </li>);
+    },
+    
+    removeArticle: function() {
+        if (--this.props.entry.amount < 1)
+            this.props.cart.entries.splice(this.props.cart.entries.indexOf(this.props.entry), 1);      
+    }
+});

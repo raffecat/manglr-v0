@@ -1,0 +1,308 @@
+<!-- typer with state-machine and computed let-binds -->
+<typer @cursor=true @speed=0.1 @pause=10>
+  <span class="typer-container { 'has-cursor' if @cursor }" data-state="{ mode }">{ text }</span>
+  <contents custom-only as-collection="MessageTags">
+    <msg @text="" />
+  </contents>
+  <state-machine name="mode">
+    <emit event="typing" on-change={ mode != 'waiting' } />
+    <emit event="waiting" on-change={ mode == 'waiting' } />
+    <bind messages=[ @text of each tag in MessageTags ] />
+    <bind message={ messages[msgno] || "" } />
+    <bind text={ message.substring(0, charpos) } />
+    <var charpos=0 msgno=0 />
+    <state name="typing" initial>
+      <script every=@speed>
+        if (charpos < message.length) {
+          // type the next letter.
+          charpos += 1
+        } else {
+          mode = "waiting"
+        }
+      </script>
+    </state>
+    <state name="waiting">
+      <script after=@pause>
+        mode = "deleting"
+      </script>
+    </state>
+    <state name="deleting">
+      <script every=@speed>
+        if (charpos > 0) {
+          // delete the next letter.
+          charpos -= 1
+        } else {
+          mode = "typing"
+          msgno = (msgno + 1) % (messages.length || 1)
+          charpos = 0
+        }
+      </script>
+    </state>
+  </fsm>
+  <!-- styles copied from Squarespace -->
+  <style>
+    .typer-container {
+      position: relative;
+      min-width: 0.1ch;
+    }
+    @keyframes cursorAnimation {
+      0% {
+        opacity: 0;
+      }
+      50% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0;
+      }
+    }
+    .typer-container.has-cursor[data-state="paused"]::after {
+      animation: cursorAnimation 1.5s step-end infinite;
+    }
+    .typer-container.has-cursor::after {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      margin: auto auto;
+      content: "";
+      width: 100%;
+      height: 100%;
+      z-index: 100;
+      left: auto;
+      right: -4px;
+      height: 1em;
+      width: 1px;
+      background-color: #000;
+    }
+  </style>
+</typer>
+
+<test>
+  <typer messages=["beautiful.", "loud.", "tasteful.", "fresh.", "show."] />
+</test>
+
+<test>
+  <typer>
+    <msg>beautiful.</msg>
+    <msg>loud.</msg>
+    <msg>tasteful.</msg>
+    <msg>fresh.</msg>
+    <msg>show.</msg>
+  </typer>
+</test>
+
+
+<!-- typer with syntax -->
+<typer @cursor=true @speed=0.1 @pause=10>
+  <span class="typer-container { 'has-cursor' if @cursor }" data-state="{ mode }">{ text }</span>
+  <contents custom-only as-collection="MessageTags">
+    <msg @text="" />
+  </contents>
+  <script type="state-machine" name="mode">
+    let messages = [ @text of each tag in MessageTags ]
+    let message = { messages[msgno] || "" }
+    let text = { message.substring(0, charpos) }
+    var charpos = 0
+    var msgno = 0
+    state "typing" {
+      every @speed * 1000 {
+        if (charpos < message.length) {
+          // type the next letter.
+          charpos += 1
+        } else {
+          mode = "waiting"
+        }
+      }
+    }
+    state "waiting" {
+      after @pause * 1000 {
+        mode = "deleting"
+      }
+    }
+    state "deleting" {
+      every @speed * 1000 {
+        if (charpos > 0) {
+          // delete the next letter.
+          charpos -= 1
+        } else {
+          mode = "typing"
+          msgno = (msgno + 1) mod (messages.length || 1)
+          charpos = 0
+        }
+      }
+    }
+    when (mode == "waiting") becomes false {
+      emit event "typing"
+    }
+    when (mode == "waiting") becomes true {
+      emit event "waiting"
+    }
+  </script>
+</typer>
+
+
+<!-- typer without computed expressions  -->
+<typer @cursor=true @speed=0.1 @pause=10>
+  <contents custom-only as-collection="MessageTags">
+    <msg @text="" />
+  </contents>
+  <view-state $text="" $messages=[ tag.@text for tag in MessageTags ] />
+  <span class="typer-container { 'has-cursor' if @cursor }" data-state="{ $mode }">{ $text }</span>
+  <state-machine name="$mode">
+    <emit event="typing" on-change={ $mode != 'waiting' } />
+    <emit event="waiting" on-change={ $mode == 'waiting' } />
+    <script>
+      var charpos, message, msgno=0;
+    </script>
+    <state name="typing" start>
+      <script>
+        message = $messages[msgno] || "";
+        msgno = (msgno + 1) % ($messages.length || 1);
+        charpos = 0;
+      </script>
+      <script every=@speed>
+        if (charpos < message.length) {
+          // type the next letter.
+          charpos += 1;
+          $text = message.substring(0, charpos);
+        } else {
+          $mode = "waiting";
+        }
+      </script>
+    </state>
+    <state name="waiting">
+      <script after=@pause>
+        $mode = "deleting";
+      </script>
+    </state>
+    <state name="deleting">
+      <script every=@speed>
+        if (charpos > 0) {
+          // delete the next letter.
+          charpos -= 1;
+          $text = message.substring(0, charpos);
+        } else {
+          $mode = "typing";
+        }
+      </script>
+    </state>
+  </fsm>
+</typer>
+
+
+<!-- typer with tag timers -->
+<typer @cursor=true @speed=0.1 @pause=10 events="typing paused">
+  <contents custom-only as-collection="MessageTags">
+    <msg a-text="" />
+  </contents>
+  <state $text="" $mode="paused" $messages=[ tag.attributes.text for tag in MessageTags ] />
+  <span class="typer-container { 'has-cursor' if @cursor }" data-state="{ $mode }">{ $text }</span>
+  <timer id="$waiting" delay=@pause do=(startNextMessage) />
+  <timer id="$typing" interval=@speed do=(typeLetter) />
+  <timer id="$deleting" interval=@speed do=(deleteLetter) />
+  <script>
+    var charpos, message, msgno = -1;
+    function on_insert() {
+      $mode = "typing";
+      startNextMessage();
+      event.typing(); // normally happens in startDeleting()
+    }
+    function startNextMessage() {
+      msgno = (msgno + 1) % $messages.length;
+      message = $messages[msgno] || "";
+      charpos = 0;
+      $typing.start();
+    }
+    function typeLetter() {
+      if (charpos < message.length) {
+        // type the next letter.
+        charpos += 1;
+        $text = message.substring(0, charpos);
+      } else {
+        // stop typing.
+        $mode = "paused";
+        $typing.stop();
+        $waiting.start();
+        event.paused();
+      }
+    }
+    function startDeleting() {
+      $mode = "typing";
+      $deleting.start();
+      event.typing();
+    }
+    function deleteLetter() {
+      if (charpos > 0) {
+        // delete the next letter.
+        charpos -= 1;
+        $text = message.substring(0, charpos);
+      } else {
+        // stop deleting.
+        $deleting.stop();
+        startNextMessage();
+      }
+    }
+  </script>
+</typer>
+
+
+<!-- typer with javascript timers -->
+<typer @cursor=true @speed=0.1 @pause=10 events="typing paused">
+  <contents custom-only as-collection="MessageTags">
+    <msg a-text="" />
+  </contents>
+  <state $text="" $mode="paused" $messages=[ tag.attributes.text for tag in MessageTags ] />
+  <span class="typer-container { 'has-cursor' if @cursor }" data-state="{ $mode }">{ $text }</span>
+  <script>
+    var waiting, typing, deleting, charpos, message, msgno = -1;
+    function on_insert() {
+      state.mode = "typing";
+      event.typing(); // normally happens in startDeleting()
+      startNextMessage();
+    }
+    function on_remove() {
+      if (waiting) cancelTimeout(waiting);
+      if (typing) clearInterval(typing);
+      if (deleting) clearInterval(deleting);
+    }
+    function startNextMessage() {
+      msgno = (msgno + 1) % state.messages.length;
+      message = state.messages[msgno] || "";
+      typing = setInterval(typeLetter, 1000 * attributes.speed);
+    }
+    function typeLetter() {
+      if (charpos < message.length) {
+        // type the next letter.
+        charpos += 1;
+        state.text = message.substring(0, charpos);
+      } else {
+        // stop typing.
+        state.mode = "paused";
+        clearInterval(typing);
+        typing = null;
+        event.paused();
+        waiting = setTimeout(startDeleting, 1000 * attributes.pause);
+      }
+    }
+    function startDeleting() {
+      state.mode = "typing";
+      event.typing();
+      deleting = setInterval(deleteLetter, 1000 * attributes.speed);
+    }
+    function deleteLetter() {
+      if (charpos > 0) {
+        // delete the next letter.
+        charpos -= 1;
+        state.text = message.substring(0, charpos);
+      } else {
+        // stop deleting.
+        clearInterval(deleting);
+        deleting = null;
+        startNextMessage();
+      }
+    }
+
+  </script>
+</typer>

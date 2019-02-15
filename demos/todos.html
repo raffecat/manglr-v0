@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>todo-project</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    </head>
+    <body>
+        <div id="app" .foo="yes" :num=12 a=[1,2,3] x.y.z="{ }">
+            <div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="well">
+                            <h2>Add a Task</h2>
+                            <form v-name="addForm">
+                                <div class="form-group">
+                                    <label for="todoitem">Task</label>
+                                    <input type="text" v-name="newTask" class="form-control" id="todoitem" placeholder="task..." />
+                                </div>
+                                <button type="button" v-on-click="@todos add newTask; addForm reset" class="btn btn-default">Add</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <h2>List</h2>
+                        <ul class="list-group">
+                            <li v-each="todo, index in @todos key index" class="list-group-item">
+                                {{ index }}: {{ todo }}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <style lang="sass" src="style.sass" scoped></style>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    </body>
+</html>
+
+
+<div id="watch-example">
+  <p>
+    Ask a yes/no question:
+    <input v-model="question">
+  </p>
+  <p>{{ question 
+        | show 'Waiting for you to stop typing...'
+        | debounce 500
+        | contains '?' or 'Questions usually contain a question mark. ;-)'
+        | show 'Thinking...'
+        | axios get 'https://yesno.wtf/api' use response.data.answer or 'Error! Could not reach the API.'
+        | capitalize
+        // I cannot give you an answer until you ask a question! }}</p>
+</div>

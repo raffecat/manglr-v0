@@ -1,0 +1,47 @@
+<html>
+<head>
+</head>
+<body>
+
+  <model name="parent" somePrimitive="99" someObject="{todd: {age: 25, location: 'England, UK'}}"></model>
+  <controller name="ctrl" bind="parent" src="controller.js"></controller>
+
+  <div>
+    <div>
+      <h3>
+        Two way data-binding
+      </h3>
+      <div class="section">
+        <h4>
+          Parent
+        </h4>
+        <p>
+          Object: {{ parent.someObject }}
+        </p>
+        <p>
+          Primitive: {{ parent.somePrimitive }}
+        </p>
+        <a href="" on-click="ctrl.updateValues">
+          Change Parent Values
+        </a>
+      </div>
+      <example obj="parent.someObject" prim="parent.somePrimitive"></example>
+    </div>
+  </div>
+
+  <component tag="example" bind="obj prim">
+    <controller name="ctrl" bind="obj prim" src="example.js"></controller>
+    <div class="section">
+      <h4>
+        Isolate Component
+      </h4>
+      <p>Object: {{ obj }}</p>
+      <p>Primitive: {{ prim }}</p>
+      <a href="" on-click="ctrl.updateValues">
+        Change Isolate Values
+      </a>
+    </div>
+  </component>
+
+</body>
+</html>

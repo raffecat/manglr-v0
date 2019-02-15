@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <my-app/>
+  </body>
+</html>
+
+<my-app title="Tour of Heroes" m-route-init="/dashboard">
+  <link rel="stylesheet" href="my-app.css">
+  <m-store id="@heroes" get-by-id="/api/heroes/{id} | pluck data"
+                        modify-by-id="/api/heroes/{id}"
+                        loading-flag="loading"/>
+  <h1>{title}</h1>
+  <nav>
+    <a .active={route-is:"/dashboard"} href="/dashboard">Dashboard</a>
+    <a .active={route-is:"/heroes"} href="/heroes">Heroes</a>
+  </nav>
+  <my-dashboard m-route="/dashboard"></my-dashboard>
+  <my-heroes m-route="/heroes"></my-heroes>
+  <hero-detail m-route="/detail/:id" hero="{id}"></hero-detail>
+</my-app>
+
+<my-dashboard>
+  <link rel="stylesheet" href="dashboard.css">
+  <h3>Top Heroes</h3>
+  <div class="grid grid-pad">
+    <a m-each="hero in @heroes" href="/detail/{hero.id}" class="col-1-4">
+      <div class="module hero">
+        <h4>{hero.name}</h4>
+      </div>
+    </a>
+  </div>
+  <hero-search></hero-search>
+</my-dashboard>
+
+<my-heroes>
+  <link rel="stylesheet" href="heroes.css">
+  <h2>My Heroes</h2>
+  <div>
+    <label>Hero name:</label> <input #heroName />
+    <button (click)="add(heroName.value); heroName.value=''">
+      Add
+    </button>
+  </div>
+  <ul class="heroes">
+    <li m-each="hero in @heroes"
+        .selected={ hero = selectedHero } 
+        onclick={ set: selectedHero = hero }>
+      <span class="badge">{hero.id}</span>
+      <span>{hero.name}</span>
+      <button class="delete" (click)="delete(hero); $event.stopPropagation()">x</button>
+    </li>
+  </ul>
+  <div m-if="selectedHero">
+    <h2>
+      {selectedHero.name | uppercase} is my hero
+    </h2>
+    <button onclick={ navigate: "/detail/{selectedHero.id}" }>View Details</button>
+  </div>
+</my-heroes>
+
+<hero-detail hero=?>
+  <link rel="stylesheet" href="hero-detail.css">
+  <div m-if="hero">
+    <h2>{hero.name} details!</h2>
+    <div>
+      <label>id: </label>{hero.id}
+    </div>
+    <div>
+      <label>name: </label>
+      <input name="heroName" value={hero.name} placeholder="name"/>
+    </div>
+    <button onclick={ set: hero.name = heroName ; navigate: back }>Save</button>
+    <button onclick={ navigate: back }>Back</button>
+  </div>
+</hero-detail>
+
+<hero-search heroes=?>
+  <link rel="stylesheet" href="hero-search.css">
+  <div id="search-component">
+    <h4>Hero Search</h4>
+    <input #searchBox id="search-box" (keyup)="search(searchBox.value)" />
+    <div>
+      <div m-each="hero in heroes" onclick={ navigate: "/detail/{hero.id}" } class="search-result" >
+        {hero.name}
+      </div>
+    </div>
+  </div>
+<hero-search>

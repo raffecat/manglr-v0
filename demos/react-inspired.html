@@ -1,0 +1,56 @@
+<!-- https://reactjs.org/docs/lifting-state-up.html -->
+
+<component BoilingVerdict>
+  {% if celsius >= 100 %}
+    <p>The water would boil.</p>
+  {% else %}
+    <p>The water would not boil.</p>
+  {% end if %}
+</component>
+
+<component Calculator>
+  <state temperature="" />
+  <fieldset>
+    <legend>Enter temperature in Celsius:</legend>
+    <input value={temperature} onChange={% set temperature=@value %} />
+    <BoilingVerdict celsius={parseFloat(temperature)} />
+  </fieldset>
+</component>
+
+<component TemperatureInput scale="enum:c|f">
+  <state temperature="" />
+  <fieldset>
+    <legend>Enter temperature in { scale | map c => Celsius ; f => Fahrenheit }:</legend>
+    <input value={temperature} onChange={% set temperature=@value %} />
+  </fieldset>
+</component>
+
+<component Calculator>
+  <div>
+    <TemperatureInput scale="c" />
+    <TemperatureInput scale="f" />
+  </div>
+</component>
+
+<component TemperatureInput scale="enum:c|f" temperature="number" on-change="number">
+  <fieldset>
+    <legend>Enter temperature in { scale | map c => "Celsius" f => "Fahrenheit" }:</legend>
+    <input value={temperature} onChange={% value | do on-change value %} />
+  </fieldset>
+</component>
+
+<component Calculator>
+  {% state temperature="" scale="c" %}
+  {% define toCelsius => (temperature - 32) * 5 / 9 | round 3 %}
+  {% define toFahrenheit => (temperature * 9 / 5) + 32 | round 3 %}
+  {% define celsius => if scale = "f" then toCelsius else temperature %}
+  {% define fahrenheit => if scale = "c" then toFahrenheit else temperature %}
+  <div>
+    <TemperatureInput scale="c" temperature={celsius} on-change={% value | set scale="c" temperature=value %} />
+    <TemperatureInput scale="f" temperature={fahrenheit} on-change={% value | set scale="f" temperature=value %} />
+    <BoilingVerdict celsius={celsius | to-number} />
+  </div>
+</component>
+
+<Fragment></Fragment>
+<Children />

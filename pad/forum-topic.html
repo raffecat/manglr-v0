@@ -1,0 +1,11 @@
+<import src="forum-nav.html" />
+
+<forum-topic forum="" topic="">
+  <nav class="communityPath"><a href="/communities/{ forum.slug }">{ forum.name }</a> &gt; <span>{ topic.name }</span></nav>
+  <div style="margin-bottom:0.8em">
+    <div class="fright" style="position:relative;top:-8px">
+      <a action="reply" class="button forumButton replyButton" role="button"><img src="forum/images/reply.png"> Reply to thread</a>
+    </div>
+    <forum-nav />
+  </div>
+</forum-topic>

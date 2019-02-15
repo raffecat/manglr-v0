@@ -1,0 +1,46 @@
+<topic title="Topic Name" posts=[] >
+
+  <import src="./avatar" />
+  <import src="./slide-left" />
+  <import src="./side-button" />
+
+  <div class="container">
+
+    <!-- heading block -->
+    <div class="row">
+      <div class="col">
+        <h3>{title}</h3>
+      </div>
+    </div>
+
+    <div repeat={ post in posts }>
+
+      <!-- avatar line -->
+      <div class="row">
+        <div class="col">
+          <avatar name={ post.user.name } />
+          <span class="name">{ post.user.name }</span>
+        </div>
+        <div class="col">
+          <span class="date">{ post.date | human-date }</span>
+        </div>
+      </div>
+
+      <!-- post body -->
+      <slide-left>
+        <block id="content">
+          <div class="post-box">
+            { post.message }
+          </div>
+        </block>
+        <block id="menu">
+          <side-button icon="quote.png" />
+          <side-button icon="report.png" />
+        </block>
+      </slide-left>
+
+    </div><!-- repeat -->
+
+  </div><!-- container -->
+
+</topic>

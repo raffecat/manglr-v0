@@ -1,0 +1,408 @@
+
+/* Community page breadcrumbs */
+
+.communityPath {
+    position: relative;
+    color: #554;
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0.5em 0 1em 0;
+}
+.communityPath a {
+    color: #57568F;
+    text-decoration: none;
+}
+.communityPath a:hover {
+    text-decoration: underline;
+}
+
+
+/* Community page markup */
+
+.g-body {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font: 16px "Varela Round", Georgia, sans-serif;
+  color: #333332;
+}
+
+.g-body p {
+    margin: .67em 0;
+}
+.g-body h1 {
+    font-size: 120%;
+    font-weight: bold;
+    margin: 0.67em 0;
+    padding: 0;
+}
+.g-body h2 {
+    font-size: 110%;
+    font-weight: bold;
+    margin: 0.67em 0;
+    padding: 0;
+}
+.g-body h3 {
+    font-size: 100%;
+    font-weight: bold;
+    margin: 0.67em 0;
+    padding: 0;
+}
+.g-body span.strikethrough {
+  text-decoration: line-through;
+}
+
+
+
+/* Community page tags */
+
+img.communityLabel {
+    float: left;
+    width: 100px;
+    height: 50px;
+    margin: 0 0.5em 0.1em 0;
+    border: 1px solid silver;
+}
+
+.boxTag {
+    border: 1px solid silver;
+    padding: 0.8em;
+    margin-bottom: 16px;
+}
+.boxTag h2 {
+    font-weight: bold;
+    padding: 0 0 10px 0;
+    color: #777;
+    letter-spacing: 0;
+}
+.boxTag.groupbox {
+    min-height: 80px;
+    background-color: white;
+}
+
+.subGenresTag {
+    clear: left;
+}
+
+.subGenresTag .subPageInfo {
+    margin-bottom: 10px;
+    border: 1px solid silver;
+    border-radius: 5px;
+    padding: 3px;
+}
+
+.subGenresTag .subPageInfo li {
+    color: #333;
+}
+
+.subGenresTag .pageStats {
+    font-size: 10px;
+    color: #333;
+}
+.subGenresTag fieldset {
+    margin: 0.4em;
+    border-top: 1px solid silver;
+    padding-top: 0.2em;
+    vertical-align: middle;
+}
+.subGenresTag legend {
+    margin: 0 10px;
+    padding: 0 3px;
+    color: #777;
+    font-size: 10px;
+}
+
+
+.columnTag {
+    float: left;
+    margin-right: 16px;
+}
+.columnTag.left300 {
+    width: 300px;
+}
+.columnTag.right600 {
+    width: 600px;
+}
+
+/* Quote tag */
+
+div.quote {
+    background-image: url(images/lquote.png),  url(images/rquote.png);
+    background-repeat: no-repeat;
+    background-position: left top, right bottom;
+    padding: 10px 25px;
+    font-style: italic;
+    color: #777;
+    border: 1px solid #e7e7e7;
+}
+div.quote em {
+    font-style: normal;
+}
+
+/* Community forum tag */
+
+.forumTag {
+    display: block;
+    border-width: 0;
+    padding: 1em 1.4em;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 2px 2px 6px rgba(180,180,180,0.5);
+}
+
+.forumTag .newPost {
+    float: right;
+}
+.forumTag .forumTopics {
+    margin-top: 8px;
+    min-height: 400px;
+}
+.forumTag .topic {
+    border: 1px solid #57568F;
+    padding: 4px;
+    margin-bottom: 4px;
+    background-color: #f8f8f8;
+}
+
+.forumTag .topic .readicon {
+    float: left;
+    margin: 4px 5px 4px 0;
+}
+
+.forumTag .unread {
+    border: 2px solid #57568F;
+}
+.forumTag .unread .topicName {
+    font-weight: bold;
+}
+.forumTag .topicName {
+    font-weight: normal;
+}
+.forumTag .topicSummary {
+    font-size: 0.75em;
+    color: #555;
+    font-style: italic;
+}
+
+.forumTag .topicInfo {
+    margin: 4px 0 2px 0;
+    font-size: 0.8em;
+    vertical-align: middle;
+}
+.forumTag .topicInfo img {
+    width: 10px;
+    height: 10px;
+}
+.forumTagForm input {
+    border: 1px solid #CCC;
+}
+.forumTagForm #title {
+    width: 400px;
+}
+.forumTagForm label {
+    color: #555;
+}
+.forumTagForm textarea {
+    font: 12px 'Courier New', Courier, monospace;
+    border: 1px solid #ccc;
+    width: 526px;
+    max-width: 526px;
+    height: 230px;
+    padding: 0px;
+    background: none;
+}
+
+.forumTagForm fieldset { 
+    border-top: 1px solid silver;
+    margin: 10px 0;
+}
+
+.forumTagForm legend {
+    font-size: 12px;
+    color: #777;
+    padding: 0 5px;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+.forumTagForm .wordPrompt h2 {
+    margin: 20px; 
+    text-align: center;
+}
+
+.forumTagForm .wordPrompt p {
+    font-size: 12px; 
+    color: #777;
+    margin: 5px 0;
+}
+
+.forumTagForm .buttonset {
+    font-size: 10px;
+    margin: 10px;
+}
+
+
+/* Forum posts page */
+
+.button.forumButton {
+    font-size: 11px;
+    color: white;
+}
+.button.forumButton img {
+    vertical-align: text-bottom;
+}
+.button.forumButton:hover {
+    color: #57568f;
+}
+
+
+.forumAuthor {
+    width: 138px;
+    float: left;
+    font-size: 80%;
+    color: white;
+    padding-right: 6px;
+    padding-top: 2px;
+}
+.forumAuthor .icons {
+    float: left;
+}
+.forumAuthor .icons img {
+    display: block; /* vertical layout */
+}
+.forumAuthor .nameplate {
+    margin-left: 20px; /* icon width */
+}
+.forumAuthor a {
+    color: white;
+    text-decoration: none;
+}
+.forumAuthor .avatar img {
+    width: 100px;
+    height: 100px;
+}
+.forumAuthor .name {
+    font-weight: bold;
+}
+
+
+.forumPosts .post {
+    background-color: #57568f;
+    padding: 6px;
+    margin-bottom: 6px;
+}
+.forumPosts .postBody {
+    margin-left: 146px; /* forumAuthor width + gutter */
+}
+.forumPosts .postBodyInner {
+    padding: 1px 0.8em 0.8em 0.8em; /* 1px prevents p margin collapse */
+    position: relative; /* for .actions, .permalink */
+    background-color: white;
+}
+.forumPosts .post.deleted {
+    color: silver;
+    font-size: 80%;
+    padding-left: 26px;
+}
+.forumPosts .actions {
+    position: absolute; bottom: 0; right: 0;
+    background-color: #57568f;
+    padding: 2px 4px 0 4px;
+    border-top-left-radius: 3px;
+    -moz-border-radius-topleft: 3px;
+    -webkit-border-top-left-radius: 3px;
+}
+.forumPosts .actions img {
+    width: 16px;
+    height: 16px;
+    vertical-align: text-bottom;
+    padding-left: 2px;
+}
+.forumPosts .actions a {
+    color: #ddd;
+    text-decoration: none;
+}
+.forumPosts .actions a:hover {
+    color: white;
+}
+.forumPosts .actions a.permalink {
+    font-size: 8pt;
+    vertical-align: top;
+    padding-left: 2px;
+}
+
+
+.forumReply {
+    background-color: #57568f;
+    padding: 6px;
+    width: 860px;
+    margin: 1em auto;
+}
+.forumReply .inner {
+    float: left;
+    width: 676px;
+    min-height: 150px;
+    background-color: white;
+    border: 1px solid #ccc;
+}
+.forumReply .g-body {
+    padding: 0 3px 0 10px;
+}
+.forumReply .forumAuthor {
+    padding: 8px 0 0 8px; /* override */
+    width: 140px;
+}
+
+#editPostInfo {
+    background-color: #eee;
+    border-bottom: 1px solid #888;
+}
+#editPostInfo .cancelEditPost {
+    display: inline-block;
+    cursor: pointer;
+    padding: 0 5px;
+    height: 24px;
+    line-height: 24px;
+    font-family: "Lucida Sans",Verdana,sans-serif;
+    font-size: 12px;
+    font-weight: normal;
+    text-align: center;
+    color: #57568f;
+    text-decoration: none;
+}
+#editPostInfo .cancelEditPost:hover {
+    background-color: #57568f;
+    color: #ffffff;
+}
+#editPostInfo .cancelEditPost img {
+    padding-top: 3px;
+    vertical-align: top;
+}
+#editPostInfo .cancelEditPost a:hover {
+    color: #6c6cb2;
+}
+#editPostInfo .pencilBox {
+    padding: 4px 0 4px 4px;
+    color: #777;
+}
+#editPostInfo .pencilBox img {
+    vertical-align: top;
+}
+#editPostInfo .pencilBox img.arrow {
+    padding-top: 3px;
+}
+#editPostBackRef {
+  text-decoration: none;
+}
+.button.postReply {
+    background-color: #ffffff;
+    color: #6c6cb2;
+    padding: 0.2em 1em;
+    font-family: "Varela Round", Georgia, sans-serif;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.g-body blockquote {
+  margin-left: 0;
+}

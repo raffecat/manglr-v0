@@ -1,0 +1,27 @@
+<forum-nav thisPage="" numPages="">
+  <style>
+    .forumNav {
+      margin-top: 8px;
+      height: 16px;
+    }
+  </style>    
+  <div class="forumNav">
+
+    <a class="nav-btn {'dimmed' if thisPage == 1}" role="button" title="First Page"
+       disable="{ thisPage == 1 }" action="{ thisPage = 1 }"><span class="icon icon-arrow-first"></span></a>
+
+    <a class="nav-btn {'dimmed' if thisPage == 1}" role="button" title="Previous Page"
+       disable="{ thisPage == 1 }" action="{ thisPage = thisPage - 1 }"><span class="icon icon-arrow-prev"></span></a>
+
+    <a repeat="pageNum in range 1 to numPages"
+       class="nav-btn {'active' if thisPage == pageNum}" role="button"
+       disable="{ thisPage == pageNum }" action="{ thisPage = pageNum }">{ pageNum }</a>
+
+    <a class="nav-btn {'dimmed' if thisPage == numPages}" role="button" title="Next Page"
+       disable="{ thisPage == numPages }" action="{ thisPage = thisPage + 1 }"><span class="icon icon-arrow-next"></span></a>
+
+    <a class="nav-btn {'dimmed' if thisPage == numPages}" role="button" title="Last Page"
+       disable="{ thisPage == numPages }" action="{ thisPage = numPages }"><span class="icon icon-arrow-last"></span></a>
+
+  </div>
+</forum-nav>

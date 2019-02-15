@@ -1,0 +1,1961 @@
+
+/* ----------------------------------------------------------
+	HTML 5 display definitions
+---------------------------------------------------------- */
+
+
+/* * Corrects `block` display not defined in IE 6/7/8/9 and Firefox 3. */
+
+article, aside, details, figcaption, figure, footer, header, hgroup, nav, section, summary { display: block; }
+/* * Corrects `inline-block` display not defined in IE 6/7/8/9 and Firefox 3. */
+audio, canvas, video { display: inline-block; *display: inline; *zoom: 1; }
+/* * Prevents modern browsers from displaying `audio` without controls.
+* Remove excess height in iOS 5 devices. */
+audio:not([controls]) { display: none; height: 0; }
+/* * Addresses styling for `hidden` attribute not present in IE 7/8/9, Firefox 3, * and Safari 4.
+* Known issue:no IE 6 support. */
+[hidden] { display: none; }
+
+/* ----------------------------------------------------------
+	Base
+---------------------------------------------------------- */
+
+/* * 1. Corrects text resizing oddly in IE 6/7 when body `font-size` is set using
+*    `em` units.
+* 2. Prevents iOS text size adjust after orientation change, without disabling
+*    user zoom. */
+
+html { font-size: 100%; /* 1 */
+	-webkit-text-size-adjust: 100%; /* 2 */
+-ms-text-size-adjust: 100%; /* 2 */ }
+html, html a { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: antialiased; text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.004); }
+/* * Addresses `font-family` inconsistency between `textarea` and other form
+* elements. */
+html, button, input, select, textarea { font-family: 'Raleway', Arial, sans-serif; }
+/* * Addresses margins handled incorrectly in IE 6/7. */
+body { margin: 0; font-family: 'Raleway', Arial, sans-serif; position: relative;}
+object{ overflow: scroll;}
+
+/* ----------------------------------------------------------
+	Links
+---------------------------------------------------------- */
+
+/* * Addresses `outline` inconsistency between Chrome and other browsers. */
+
+a:focus { outline: none; }
+/* * Improves readability when focused and also mouse hovered in all browsers. */
+a:active, a:hover { outline: 0; }
+
+a{outline: 0; }
+button:focus{outline:0;}
+
+input[type=radio]:checked { outline:0; }
+input[type=radio]:focus { outline: 0; }
+
+/* ----------------------------------------------------------
+	Typography
+---------------------------------------------------------- */
+
+/* * Addresses font sizes and margins set differently in IE 6/7.
+* Addresses font sizes within `section` and `article` in Firefox 4+, Safari 5, * and Chrome. */
+
+h1 { font-size: 2em; margin: 0.67em 0; color: #ecf0f1; }
+h2 { font-size: 1.5em; margin: 0.83em 0; }
+h3 { font-size: 1.17em; margin: 1em 0; }
+h4 { font-size: 1em; margin: 1.33em 0; }
+h5 { font-size: 0.83em; margin: 1.67em 0; }
+h6 { font-size: 0.75em; margin: 2.33em 0; }
+/* * Addresses styling not present in IE 7/8/9, Safari 5, and Chrome. */
+abbr[title] { border-bottom: 1px dotted; }
+/* * Addresses style set to `bolder` in Firefox 3+, Safari 4/5, and Chrome. */
+b, strong { font-weight: bold; }
+blockquote { margin: 1em 40px; }
+/* * Addresses styling not present in Safari 5 and Chrome. */
+dfn { font-style: italic; }
+/* * Addresses styling not present in IE 6/7/8/9. */
+mark { background: #ff0; color: #000; }
+/* * Addresses margins set differently in IE 6/7. */
+p, pre { margin: 1em 0; }
+/* * Corrects font family set oddly in IE 6, Safari 4/5, and Chrome. */
+code, kbd, pre, samp { font-family: monospace, serif; _font-family: 'courier new', monospace; font-size: 1em; }
+/* * Improves readability of pre-formatted text in all browsers. */
+pre { white-space: pre; white-space: pre-wrap; word-wrap: break-word; }
+/* * Addresses CSS quotes not supported in IE 6/7. */
+q { quotes: none; }
+/* * Addresses `quotes` property not supported in Safari 4. */
+q:before, q:after { content: ''; content: none; }
+small { font-size: 75%; }
+/* * Prevents `sub` and `sup` affecting `line-height` in all browsers. */
+sub, sup { font-size: 75%; line-height: 0; position: relative; vertical-align: baseline; }
+sup { top: -0.5em; }
+sub { bottom: -0.25em; }
+
+@import url(".../stylesheet.css");
+
+/* ----------------------------------------------------------
+	Lists
+---------------------------------------------------------- */
+
+/* * Addresses margins set differently in IE 6/7. */
+
+dl, menu, ol, ul { margin: 1em 0; }
+dd { margin: 0 0 0 40px; }
+/* * Addresses paddings set differently in IE 6/7. */
+menu, ol, ul { padding: 0 0 0 40px; }
+/* * Corrects list images handled incorrectly in IE 7. */
+nav ul, nav ol { list-style: none; list-style-image: none; }
+
+/* ----------------------------------------------------------
+	Embedded content
+---------------------------------------------------------- */
+
+/* * 1. Removes border when inside `a` element in IE 6/7/8/9 and Firefox 3.
+* 2. Improves image quality when scaled in IE 7. */
+
+img { border: 0; /* 1 */
+-ms-interpolation-mode: bicubic; /* 2 */ }
+/* * Corrects overflow displayed oddly in IE 9. */
+svg:not(:root) { overflow: hidden; }
+
+/* ----------------------------------------------------------
+	Figures
+---------------------------------------------------------- */
+
+/* * Addresses margin not present in IE 6/7/8/9, Safari 5, and Opera 11. */
+
+figure { margin: 0; }
+
+
+/* ----------------------------------------------------------
+	Globals
+---------------------------------------------------------- */
+.navPadding{
+	padding-top: 60px;
+}
+
+h1{
+	font-family: 'klinic_slabbold', arial;
+	font-size: 50px;
+	color: #232938;
+	line-height: 64px;
+}
+h2{
+	font-family: 'klinic_slabbold', arial;
+	font-size: 42px;
+	color: #232938;
+	line-height: 56px;
+}
+
+h3{
+	font-family: 'klinic_slabbook', arial;
+	font-size: 30px;
+	color: #232938;
+	line-height: 42px;
+}
+
+h4{
+	font-family: 'Raleway', arial;
+	font-size: 20px;
+	color: #232938;
+	line-height: 32px;
+	font-style: italic;
+}
+
+p{
+	font-family: 'Raleway', arial;
+	font-size: 18px;
+	color: #232938;
+	line-height: 32px;
+	font-weight: 600;
+}
+
+.bttn{
+	font-family: 'Raleway', arial;
+	font-size: 15px;
+	font-weight: 700;
+	color: #fff;
+	background-color: #f26951;
+	-webkit-border-radius: 9px;
+	-moz-border-radius: 9px;
+	-ms-border-radius: 9px;
+	-o-border-radius: 9px;
+	border-radius: 9px;
+	padding: 12px;
+	-webkit-box-shadow: 0px 3px #d45b46;
+	-moz-box-shadow: 0px 3px #d45b46;
+	-ms-box-shadow: 0px 3px #d45b46;
+	-o-box-shadow: 0px 3px #d45b46;
+	box-shadow: 0px 3px #d45b46;
+	border: none;
+}
+
+.bttn:hover{
+	-webkit-box-shadow: none;
+	-moz-box-shadow: none;
+	-ms-box-shadow: none;
+	-o-box-shadow: none;
+	box-shadow: none;
+	background-color: #d45b46;
+	margin-top: 3px;
+	border: none;
+}
+
+.bttn:active .bbtn:focus .bttn:{
+	-webkit-box-shadow: none;
+	-moz-box-shadow: none;
+	-ms-box-shadow: none;
+	-o-box-shadow: none;
+	background-color: #111826;
+	margin-top: 3px;
+	border: none;
+}
+
+.bold{
+	font-weight: 700;
+}
+
+.tel{
+	color: #232938;
+}
+
+.tel:hover{
+	text-decoration: none;
+	color: #232938;
+	cursor: default;
+}
+
+
+/* ----------------------------------------------------------
+	Header
+---------------------------------------------------------- */
+
+
+.hero-bkg-animated {
+  background: url(../images/b2.svg) repeat 0 0;
+  width: 100%;
+  margin: 0;
+  text-align: center;
+  height: 800px;
+  padding-top: 120px;
+  -webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-ms-box-sizing: border-box;
+	-o-box-sizing: border-box;
+	box-sizing: border-box;
+
+  -webkit-animation: slide 20s linear infinite;
+-moz-animation: slide 20s linear infinite;
+-ms-animation: slide 20s linear infinite;
+-o-animation: slide 20s linear infinite;
+animation: slide 20s linear infinite;
+
+}
+
+
+@-webkit-keyframes slide {
+    from { background-position: 0 0; }
+    to { background-position: 0px -400px; }
+}
+
+/* Navigational */
+
+nav{
+	-webkit-transition: top 0.5s ease-in-out;
+	-moz-transition: top 0.5s ease-in-out;
+	-ms-transition: top 0.5s ease-in-out;
+	-o-transition: top 0.5s ease-in-out;
+	transition: top 0.5s ease-in-out;
+
+}
+
+.navbar{
+	height: 100px;
+}
+.navbar-default {
+  background-color: #fff;
+  border-color: #f26951;
+  border-bottom-width: 2px;
+  }
+
+.navbar-brand{
+	background: url(../images/beaverstail_Logo.svg);
+	display: block;
+	height: 51px;
+  	width: 167px;
+  	margin-top: 21px;
+	text-indent: 130%;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.nav{
+	margin-top: 24px;
+	float: right;
+}
+
+.navbar-default .navbar-nav>li {
+	margin-left: 10px;
+
+}
+
+.nav li:last-child{
+	margin-left: 30px;
+	margin-top: 4px;
+}
+
+nav.navbar-default .navbar-nav>li>a {
+	font-family: 'Raleway', arial;
+	font-weight: 700;
+	font-size: 16px;
+	color: #232938;
+	padding-left:10px;
+}
+.navbar>.container .navbar-brand, .navbar>.container-fluid .navbar-brand{
+	margin-left: -15px;
+}
+
+.navbar-default .navbar-nav>li>a:hover{
+	color: #f26951;
+}
+
+.navbar-default .navbar-nav>.active>a, .navbar-default .navbar-nav>.active>a:focus, .navbar-default .navbar-nav>.active>a:hover{
+	color: #f26951;
+	background-color: transparent;
+}
+
+.order2{
+	margin-top: -2px;
+}
+
+.nav-up {
+    top: -100px;
+}
+
+
+.sandwichBG{
+position: absolute;
+  margin-left: -157px;
+  margin-top: 30px;
+}
+
+.sandwichBG object, .sandwichBG2 object{
+	width: 400px;
+}
+
+.sandwichBG2{
+position: absolute;
+right: -171px;
+ margin-top: -640px;
+}
+
+header h1{
+	margin-top: 245px;
+	font-family: 'Raleway', arial;
+	font-weight: 800;
+	color: #fff;
+}
+
+/* Menu Modal */
+
+.modal-dialog {
+      width: 100%;
+      height: 100%;
+      padding: 0;
+      margin:0;
+      background: #fff;
+    }
+
+    .modal-header{
+    	border-bottom: none;
+    }
+
+    .modal-header span{
+    }
+
+    .modal-content {
+      height: 100%;
+      border-radius: 0;
+      color:white;
+      overflow:auto;
+      background: #f0efdf;
+    }
+
+    .modal-content-one
+    {
+      background-color: #fff;
+    }
+
+.modal-body h4{
+	font-size: 23px;
+	font-style: normal;
+	margin: 5px 0px;
+	font-weight: 700;
+}
+
+.modal-body h6{
+	margin-top: 25px;
+	font-size: 24px;
+	color: #f26951;
+	font-weight: 700;
+	line-height: 30px
+}
+
+.modal-body h1{
+	margin-top: 100px;
+	font-family: 'klinic_slabbold', arial;
+	font-size: 68px;
+	color: #232938;
+	line-height: 80px;
+	font-weight: 500;
+}
+
+.modal-body h2{
+	margin-bottom: 40px;
+}
+
+.modal-body .prices{
+	margin-top: 30px;
+	margin-bottom: 50px;
+}
+
+.modal-body .logo{
+	margin-top: 60px;
+	margin-bottom: 30px;
+}
+
+.modal-body .sushi h4{
+	margin-top: -20px;
+}
+
+.modal-body .sweets h4{
+	margin-top: -20px;
+}
+
+#closemodal{
+	position: fixed;
+	z-index: 100;
+	right: 25px;
+  	top: 25px;
+  	background-color: transparent;
+  	color: #f26951;
+  	border: none;
+
+}
+
+#closemodal i{
+	font-size: 30px;
+}
+
+
+/* ----------------------------------------------------------
+	Main
+---------------------------------------------------------- */
+
+/* About */
+
+
+.aboutOne{
+	background-color: #b6dff7;
+	height: 440px;
+}
+
+.aboutOne h2 {
+	color: #232938;
+	padding-top: 50px;
+}
+
+.aboutOne p {
+	color: #232938;
+}
+
+.aboutTwo{
+	background-color: #c9e6f7;
+	height: 440px;
+}
+.aboutTwo h2 {
+	color: #232938;
+	padding-top: 50px;
+}
+
+.aboutTwo p {
+	color: #232938;
+}
+
+.about section{
+	margin-top: 50px;
+}
+
+/* How it Works */
+
+#howItWorks{
+	background-color:;
+	padding-bottom: 70px;
+	background-color: #fff;
+}
+
+.howItWorks h2{
+	margin-top: 100px;
+	margin-bottom: -20px;
+}
+
+.howItWorks h4{
+	margin-bottom: 80px;
+	font-size: 24px;
+}
+
+.howItWorks .row section:first-child{
+	margin-bottom: -1px
+}
+
+.HIWimages object{
+	width: 240px;
+}
+
+.enjoy object{
+	width: 280px;
+	margin-left: 20px;
+}
+
+.order3{
+	margin-top: 50px;
+
+	height: 50px;
+}
+
+.order4{
+	margin-top: 20px;
+	margin-bottom: 20px;
+	height: 70px;
+}
+
+.order3 .bttn, .order4 .bttn{
+	font-size: 20px;
+	padding: 13px 16px
+}
+
+/* Kids Parties */
+#kidsParties{
+	background-color: #c9e6f7;
+	padding-bottom: 80px
+}
+
+.partyOrderButton{
+	height: 50px;
+}
+
+.kidsBttn{
+	margin-top: 10px;
+}
+
+#kidsParties object{
+	margin-top: 40px;
+	width: 50%;
+}
+
+#kidsParties h2{
+	margin-top: 20px;
+	color: #232938;
+}
+
+
+
+
+/* Pay It Foward */
+
+.donate{
+	background-color: #f16951;
+	color: #fff;
+	padding-top: 60px;
+}
+
+.donate h2 , .donate h3, .donate h4, .donate p{
+	color: #fff;
+}
+
+.donate h2{
+	margin-bottom: -10px;
+}
+
+.donate h4{
+	margin-bottom: 50px;
+	font-style: normal;
+}
+
+.donate h3{
+	margin-top: 35px;
+	margin-bottom: 60px;
+}
+
+.donate p{
+	margin-top: -40px;
+	margin-bottom: 10px;
+}
+
+.donate img{
+	width: 200px;
+	margin-bottom: -40px;
+}
+
+.donateForm{
+	border-top-left-radius: 10px;
+  	border-top-right-radius: 10px;
+	background-color: #fff;
+	height: 100%;
+	width: 80%;
+  	margin: 0 auto;
+  	position: relative;
+}
+
+.donateForm .form-control {
+	font-size: 16px;
+}
+.donateForm h3{
+	color: #f26951;
+	text-align: center;
+	margin-top: 44px;
+	font-size: 38px;
+}
+
+.donateForm form{
+	padding-top: 10px;
+  margin-left: 0px;
+}
+
+
+.donateForm .form-group{
+	margin-top: -30px;
+	margin-bottom: 30px;
+}
+
+.donateForm .form-group label{
+	font-size: 16px;
+	padding-bottom: 10px;
+	color: #f26951;
+}
+
+.donateForm .selectSchool select{
+	border: 2px solid #232837;
+}
+
+.donateForm .selectSchool label{
+	padding-top: 17px;
+	font-weight: 400;
+}
+
+.donateForm  .bttn{
+	padding-left: 40px;
+	padding-right: 40px;
+  margin-bottom: 40px;
+}
+
+.donateForm  .bttn:hover{
+  margin: 0px;
+  margin-bottom: 40px;
+    color: #fff;
+    background-color: #d45b46;
+    -webkit-border-radius: 9px;
+    -moz-border-radius: 9px;
+    -ms-border-radius: 9px;
+    -o-border-radius: 9px;
+
+    -webkit-box-shadow: 0px 3px #d45b46;
+    -moz-box-shadow: 0px 3px #d45b46;
+    -ms-box-shadow: 0px 3px #d45b46;
+    -o-box-shadow: 0px 3px #d45b46;
+    box-shadow: 0px 3px #d45b46;
+    border: none;
+}
+
+/* Contact */
+
+.contact{
+	background-color: #c4e4f7;
+	padding: 80px 0px 80px 0px;
+}
+
+.contact h2{
+	margin-bottom: 0px;
+}
+
+.contact form{
+	margin-top: 60px;
+	margin-bottom: 100px;
+	position: relative;
+	height: 350px;
+}
+
+.message{
+	margin-top: ;
+}
+
+/* Isao */
+.form-control {
+	font-size: 24px;
+	font-weight: 700;
+	line-height: 1.42857143;
+	background-image: none;
+	border: 0px;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	-ms-border-radius: 4px;
+	-o-border-radius: 4px;
+	border-radius: 4px;
+	-webkit-box-shadow: none;
+	-moz-box-shadow: none;
+	-ms-box-shadow: none;
+	-o-box-shadow: none;
+	box-shadow: none;
+}
+
+.form-control:hover, .form-control:focus{
+	-webkit-box-shadow: none;
+	-moz-box-shadow: none;
+	-ms-box-shadow: none;
+	-o-box-shadow: none;
+	box-shadow: none;
+}
+.input__field--isao {
+	z-index: 10;
+	padding-old: 0.75em 0.1em 0.45em;
+  padding: 0 0.1em 0;
+	width: 100%;
+	background: transparent;
+	color: #1f2330;
+}
+
+select.form-control {
+  padding-bottom: 0px;
+  padding-top: 0px;
+}
+
+.input__label--isao {
+	position: relative;
+	overflow: hidden;
+	padding: 0;
+	padding-top: 17px;
+	font-weight: 400;
+	width: 100%;
+	color: #1f2330;
+	text-align: left;
+	font-size: 18px;
+}
+
+.input__label--isao::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	width: 100%;
+	height: 5px;
+	background: #1f2330;
+	-webkit-transform: scale3d(1, 0.4, 1);
+	-moz-transform: scale3d(1, 0.4, 1);
+	-ms-transform: scale3d(1, 0.4, 1);
+	-o-transform: scale3d(1, 0.4, 1);
+	transform: scale3d(1, 0.4, 1);
+
+	-webkit-transform-origin: 50% 100%;
+	transform-origin: 50% 100%;
+	-webkit-transition: transform 0.3s, background-color 0.3s;
+	-moz-transition: transform 0.3s, background-color 0.3s;
+	-ms-transition: transform 0.3s, background-color 0.3s;
+	-o-transition: transform 0.3s, background-color 0.3s;
+	transition: transform 0.3s, background-color 0.3s;
+
+	-webkit-transition-timing-function: cubic-bezier(0.2, 1, 0.3, 1);
+	-moz-transition-timing-function: cubic-bezier(0.2, 1, 0.3, 1);
+	-ms-transition-timing-function: cubic-bezier(0.2, 1, 0.3, 1);
+	-o-transition-timing-function: cubic-bezier(0.2, 1, 0.3, 1);
+	transition-timing-function: cubic-bezier(0.2, 1, 0.3, 1);
+
+}
+
+.input__label--isao::after {
+	content: attr(data-content);
+	position: absolute;
+	top: 0;
+	left: 0;
+	padding: 0.75em 0.15em;
+	color: #13a265;
+	opacity: 0;
+	-webkit-transform: translate3d(0, 50%, 0);
+	-moz-transform: translate3d(0, 50%, 0);
+	-ms-transform: translate3d(0, 50%, 0);
+	-o-transform: translate3d(0, 50%, 0);
+	transform: translate3d(0, 50%, 0);
+	-webkit-transition: opacity 0.3s, transform 0.3s;
+	-moz-transition: opacity 0.3s, transform 0.3s;
+	-ms-transition: opacity 0.3s, transform 0.3s;
+	-o-transition: opacity 0.3s, transform 0.3s;
+	transition: opacity 0.3s, transform 0.3s;
+	-webkit-transition-timing-function: cubic-bezier(0.2, 1, 0.3, 1);
+	-moz-transition-timing-function: cubic-bezier(0.2, 1, 0.3, 1);
+	-ms-transition-timing-function: cubic-bezier(0.2, 1, 0.3, 1);
+	-o-transition-timing-function: cubic-bezier(0.2, 1, 0.3, 1);
+	transition-timing-function: cubic-bezier(0.2, 1, 0.3, 1);
+
+	pointer-events: none;
+}
+
+.input__field--isao:focus + .input__label--isao::before {
+	background-color: #13a265;
+	-webkit-transform: scale3d(1, 1, 1);
+	-moz-transform: scale3d(1, 1, 1);
+	-ms-transform: scale3d(1, 1, 1);
+	-o-transform: scale3d(1, 1, 1);
+	transform: scale3d(1, 1, 1);
+
+}
+
+.input__field--isao:focus + .input__label--isao {
+	pointer-events: none;
+}
+
+.input__field--isao:focus + .input__label--isao::after {
+	opacity: 1;
+	-webkit-transform: translate3d(0, 0, 0);
+	-moz-transform: translate3d(0, 0, 0);
+	-ms-transform: translate3d(0, 0, 0);
+	-o-transform: translate3d(0, 0, 0);
+	transform: translate3d(0, 0, 0);
+
+}
+
+.input__label-content--isao {
+	padding: 0.75em 0.15em;
+	-webkit-transition: opacity 0.3s, transform 0.3s;
+	-moz-transition: opacity 0.3s, transform 0.3s;
+	-ms-transition: opacity 0.3s, transform 0.3s;
+	-o-transition: opacity 0.3s, transform 0.3s;
+	transition: opacity 0.3s, transform 0.3s;
+	-webkit-transition-timing-function: cubic-bezier(0.2, 1, 0.3, 1);
+	-moz-transition-timing-function: cubic-bezier(0.2, 1, 0.3, 1);
+	-ms-transition-timing-function: cubic-bezier(0.2, 1, 0.3, 1);
+	-o-transition-timing-function: cubic-bezier(0.2, 1, 0.3, 1);
+	transition-timing-function: cubic-bezier(0.2, 1, 0.3, 1);
+
+}
+
+.input__field--isao:focus + .input__label--isao .input__label-content--isao {
+	opacity: 0;
+	-webkit-transform: translate3d(0, -50%, 0);
+	-moz-transform: translate3d(0, -50%, 0);
+	-ms-transform: translate3d(0, -50%, 0);
+	-o-transform: translate3d(0, -50%, 0);
+	transform: translate3d(0, -50%, 0);
+
+
+}
+
+.contact .bttn{
+	padding-left: 40px;
+	padding-right: 40px;
+	-webkit-box-shadow: 0px 3px #d13a265;
+	-moz-box-shadow: 0px 3px #d13a265;
+	-ms-box-shadow: 0px 3px #d13a265;
+	-o-box-shadow: 0px 3px #d13a265;
+	box-shadow: 0px 3px #d13a265;
+
+}
+
+.contact .bttn:hover{
+	margin-top: 3px;
+}
+
+
+/* Footer */
+
+footer{
+	padding: 30px 0px;
+	border-top: 2px solid #f26951;
+	background: #fff;
+}
+
+footer img{
+	width: 80px;
+
+}
+
+.socialIcons{
+	margin-top: 25px;
+	margin-bottom: 0px;
+}
+
+.socialIcons span{
+	font-size: 24px;
+}
+
+.socialIcons li{
+	padding-left: 14px
+}
+
+.socialIcons li:first-child{
+	padding-left: 0px
+}
+
+.alyoop{
+	margin-left: -11px;
+}
+.alyoop a{
+	display: inline-block;
+	position: relative;
+}
+
+.alyoop img{
+	width: 20px;
+	margin-top: -15px;
+  	margin-left: 2px;
+	position: absolute;
+}
+
+footer ul li{
+	display: inline-block;
+	font-size: 12px;
+	text-align: center;
+	line-height: 30px;
+}
+
+.lineBreak{
+	margin: 0px 10px;
+}
+
+
+footer ul li a{
+	color: #f26951;
+}
+
+footer ul li a:hover{
+	text-decoration: none;
+	color: #1f2330;
+}
+
+/* ----------------------------------------------------------
+	Private Policy and T & C Page
+---------------------------------------------------------- */
+.headerSection{
+	height: 300px;
+	background-color: #f16951;
+	margin-top: -10px;
+}
+
+.headerSection h1{
+color: #fff;
+margin-top: 125px;
+}
+
+.privatePolicy p{
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+
+/* ----------------------------------------------------------
+	Order Page
+---------------------------------------------------------- */
+
+.page2{
+	  background: #f26951;
+	  padding-bottom: 50px;
+}
+
+.orderForm{
+	padding-bottom: 30px;
+}
+
+.orderForm figure{
+	margin-top: 80px;
+	padding-bottom: 20px;
+}
+
+.orderForm figure object{
+	width: 120px;
+}
+
+.vertical-center {
+  min-height: 70%;  /* Fallback for browsers do NOT support vh unit */
+  min-height: 70vh; /* These two lines are counted as one :-)       */
+
+  display: flex;
+  align-items: center;
+}
+
+.panel-body{
+
+	background: #fff;
+	border: 2px solid #1f2330;
+	border-radius: 8px;
+	padding: 20px;
+	position: relative;
+}
+
+.panel-body h1{
+	text-align: center;
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+.panel-body #header p{
+	text-align: center;
+	margin-top: 10px;
+}
+
+#body h4{
+	text-align: center;
+}
+
+.select{
+	margin: 30px 0px;
+}
+
+.orderForm .select label{
+	padding-top: 11px;
+	font-weight: 400;
+}
+
+.orderForm .select select{
+	border: 2px solid #232837;
+}
+
+.orderForm .form-control {
+	font-size: 16px;
+
+}
+
+.nextButtonPg2{
+	margin: 30px 0px;
+  padding-bottom: 1px;
+  clear: both;
+}
+
+
+.back{
+	background-color: #232837;
+	-webkit-box-shadow: 0px 3px #232837;
+	-moz-box-shadow: 0px 3px #232837;
+	-ms-box-shadow: 0px 3px #232837;
+	-o-box-shadow: 0px 3px #232837;
+	box-shadow: 0px 3px #232837;
+	padding-left: 30px;
+	padding-right: 30px;
+
+}
+
+.back:hover{
+	background-color: #232837;
+  color: #fff;
+}
+
+.bttn.locked {
+  background-color: #bbb;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  -ms-box-shadow: none;
+  -o-box-shadow: none;
+  box-shadow: none;
+  border: none;
+  cursor: default;
+}
+.bttn.locked:hover{
+  background-color: #bbb;
+  margin-top: 0px;
+  cursor: default;
+}
+.bttn.locked:active {
+  background-color: #bbb;
+  margin-top: 0px;
+  cursor: default;
+}
+
+
+/* ----------------------------------------------------------
+	Complete and Expired Page
+---------------------------------------------------------- */
+
+.complete, .expired, .admin{
+	  background: #f26951;
+	  height: 100%;
+}
+
+.completeForm figure{
+	margin-top: 80px;
+	padding-bottom: 20px;
+}
+
+.completeForm figure object{
+	width: 120px;
+}
+
+.completeForm h3{
+	text-align: center;
+}
+
+.startBtn{
+	margin: 30px 0px;
+	height: 1px;
+}
+
+.startBtn .bttn{
+	padding-left: 30px;
+	padding-right: 30px;
+}
+
+.startAgain {
+  margin: 30px 0px;
+  height: 25px;
+}
+
+
+/* ----------------------------------------------------------
+	Lunch Page
+---------------------------------------------------------- */
+
+.lunch{
+	  background: #f26951;
+}
+
+.lunch h4{
+	text-align: center !important;
+	font-style: normal;
+	font-weight: 800;
+	margin-bottom: 10px;
+	margin-top: -10px;
+
+}
+
+.lunch #body h3{
+font-family: 'Raleway', arial;
+font-weight: 600;
+margin-bottom:20px;
+margin-top: 0px;
+
+}
+
+.lunch #body p{
+	margin-top: 0px;
+	font-size: 14px;
+	line-height: 22px;
+}
+
+.lunch label{
+	font-weight: 800;
+}
+
+
+.lunch span{
+	font-style: italic;
+	display: inline-block;
+}
+
+.lunch .input--isao span{
+	display: inline;
+}
+
+.lunch #body figure img{
+	width: 150px;
+	margin-bottom: 0px;
+	text-align: center;
+}
+
+
+.extras figure{
+	width: 250px;
+	margin-bottom: 0px;
+	text-align: center;
+	margin: 0 auto;
+}
+
+.lunch .prices{
+  margin-top: 20px;
+	margin-bottom: 40px;
+}
+
+.lunch .prices h6{
+	font-size: 20px;
+	margin-top: 20px;
+	margin-bottom: 25px;
+}
+
+.lunch h6{
+	font-size: 18px;
+	margin-bottom: 20px;
+	margin-top: 20px;
+	font-weight: 600;
+}
+
+.lunch .sandwiches figure{
+	margin-top: 10px;
+}
+
+.lunch .sushi figure{
+	margin-top: 10px;
+}
+
+.lunch .sweets figure{
+	margin-top: 10px;
+}
+
+.lunch #body h4{
+	font-size: 16px;
+}
+
+
+.lunch .extras figure{
+	margin-top: -20px;
+}
+
+.No{
+	padding-top: 50px;
+	padding-bottom: 50px;
+}
+
+#inlineRadio1{
+	margin: -7px
+}
+
+.first{
+	margin-top: -6px;
+}
+
+/* hide input */
+input[type=radio] {
+  -webkit-appearance: none;
+  -webkit-border-radius: 13px;
+  border-radius: 13px;
+  width: 13px; height: 13px;
+  vertical-align: text-top;
+  background: #ffffff;
+  border: 2px solid #f26951;
+  cursor: pointer;
+}
+input[type=radio]:checked {
+  background: #f26951;
+  padding: 2px;
+}
+body.show-focus input[type=radio]:focus {
+  border: 3px dotted #f26951;
+}
+body.show-focus input[type=radio]:checked:focus {
+  border: 2px dotted #ffffff;
+}
+
+.lunch2 section {
+  padding-bottom: 80px;
+}
+
+.lunch2 label{
+  font-weight: normal;
+}
+
+.lunch2 .form-control{
+  font-size: 16px;
+}
+
+.lunch2 #menu figure {
+  margin-top: 40px;
+  padding-bottom: 20px;
+  height: 220px;
+}
+
+.lunch2 .sandwichOpts {
+  margin-left:auto;
+  margin-right:auto;
+  text-align:left;
+  width:120px;
+  white-space:nowrap;
+}
+
+.lunch2 .sweets .sandwichOpts {
+  width:160px;
+}
+
+.lunch2 .extras .sandwichOpts {
+  width: 190px;
+}
+
+.lunch2 #menu h4 {
+  font-size: 18px;
+  font-weight: 700;
+  font-family: 'Raleway', arial;
+  font-style: normal;
+}
+
+.lunch2 p {
+  font-size: 18px !important;
+  line-height: 26px !important;
+  padding-bottom: 10px !important;
+  margin-top: 10px !important;
+  font-weight: 400;
+  font-family: 'Raleway', arial;
+  font-style: normal;
+  min-height: 3.4em;
+}
+
+.lunch2 #menu label {
+  min-height: 20px;
+  padding-left: 20px;
+  margin-bottom: 0;
+  font-weight: 800;
+}
+
+
+
+/* ----------------------------------------------------------
+	Business Page
+---------------------------------------------------------- */
+
+
+#business header{
+  background: url(../images/businessb2.svg) repeat 0 0;
+  width: 100%;
+  margin: 0;
+  text-align: center;
+  height: 390px;
+  padding-top: 120px;
+}
+
+#business header figure{
+	margin-top: -40px;
+}
+
+#business header object{
+	width: 150px;
+}
+
+#business header h1{
+	margin-top: 29px;
+	font-size: 70px;
+	color:#232837;
+}
+
+#business #body{
+	padding-top: 40px;
+	background-color: #fff;
+	position: relative;
+}
+
+#business p{
+	font-size: 24px;
+	line-height: 34px;
+	padding-bottom: 50px;
+}
+
+#business footer{
+position: absolute;
+  right: 0;
+  left: 0;
+
+  background-color: #fff;
+  text-align: center;
+}
+
+.businessContact .sumbitButton{
+	height: 170px;
+	padding-top: 60px;
+}
+
+.businessContact .bttn{
+	padding: 10px 20px;
+	font-size: 18px;
+}
+
+#business h4{
+	margin-top: -40px;
+	margin-bottom: 50px;
+}
+
+
+
+/* ----------------------------------------------------------
+	Party Page
+---------------------------------------------------------- */
+
+
+#party header{
+  background-color: #c9e6f7;
+  width: 100%;
+  margin: 0;
+  text-align: center;
+  height: 715px;
+  padding-top: 120px;
+}
+
+.beaverParty{
+
+	width: 700px;
+	margin: 0 auto;
+	z-index: -1;
+}
+
+#party .main{
+	background-color: #fff;
+	z-index: 2;
+}
+
+#party h1{
+	margin-top: 90px;
+	color: #232938;
+}
+
+#party p{
+	margin-top: 50px;
+	font-size: 24px;
+	line-height: 34px;
+	padding-bottom: 50px;
+}
+
+.partyContact .sumbitButton{
+	height: 170px;
+	padding-top: 60px;
+}
+
+.partyContact .bttn{
+	padding: 10px 20px;
+	font-size: 18px;
+}
+
+
+
+/* ----------------------------------------------------------
+	Seperate Order Form
+---------------------------------------------------------- */
+#seperateOrderFormPage .logo{
+	margin-top: 40px;
+}
+.seperateOrderSection{
+	background-color: #c9e6f7;
+}
+
+.seperateForm{
+	padding-top: 60px;
+	padding-bottom: 30px;
+}
+
+.seperateForm section {
+  padding-bottom: 80px;
+}
+
+.seperateForm h6 {
+  margin-bottom: 0;
+}
+
+.seperateForm figure {
+	margin-top: 60px;
+	padding-bottom: 20px;
+  height: 220px;
+}
+
+.seperateForm figure object{
+	width: 120px;
+}
+
+.seperateForm .prices h6{
+	font-size: 26px;
+	font-weight: 700;
+  margin-top: 1em;
+}
+
+.seperateForm .sandwiches h4, .seperateForm .extras h4, .seperateForm .sushi h4, .seperateForm .sweets h4 {
+	font-size: 18px;
+	font-weight: 700;
+	font-family: 'Raleway', arial;
+	font-style: normal;
+
+}
+
+.seperateForm .sandwiches p, .seperateForm .extras p, .seperateForm .sushi p, .pseperateForm .sweets p {
+	font-size: 18px !important;
+	line-height: 26px !important;
+	padding-bottom: 10px !important;
+	margin-top: 10px !important;
+	font-weight: 400;
+	font-family: 'Raleway', arial;
+	font-style: normal;
+  min-height: 3.4em;
+
+}
+
+.seperateForm .sandwiches label, .seperateForm .extras label, .seperateForm .sushi label, .pseperateForm .sweets label {
+  min-height: 20px;
+  padding-left: 20px;
+  margin-bottom: 0;
+  font-weight: 400;
+}
+
+.seperateForm  label{
+	float: left;
+}
+
+.seperateForm input[type=number] {
+  -webkit-appearance: none;
+padding-top: 10px;
+  x-display: inline-block;
+  vertical-align: text-top;
+  background: #ffffff;
+  border: 1px solid #f26951;
+  cursor: pointer;
+  margin-bottom:13px;
+  margin-left: 20px;
+}
+
+.seperateForm .form-control{
+	font-size: 16px;
+}
+
+.seperateForm .row h3{
+  margin-top: 100px;
+	margin-bottom: -10px;
+}
+
+.seperateForm .prices{
+	padding-bottom: 10px;
+}
+
+.seperateForm .error{
+  padding-top: 20px;
+  color:#c44;
+}
+
+
+
+
+   /*==========  Mobile First Method  ==========*/
+
+    /* Custom, iPhone Retina */
+    @media only screen and (max-width : 325px) {
+
+    	.orderForm figure{
+			margin-top: 20px;
+			padding-bottom: 20px;
+			width: 92% !important;
+			width: 92vw !important;
+		}
+
+
+		.vertical-center {
+			width: 92% !important;
+			width: 92vw !important;
+			padding-bottom: 40px;
+		}
+
+
+    }
+
+    /* Extra Small Devices, Phones */
+    @media only screen and (max-width : 480px) {
+
+    	.hero-bkg-animated{
+    		height: 400px;
+    	}
+
+    	header h1{
+    		margin-top: 2% !important;
+    		font-size: 36px;
+    		line-height: 48px;
+    	}
+
+    	.beaver object{
+    		width: 200px;
+    	}
+
+    	/* Menu Modal */
+
+    	.modal-body h1{
+			margin-bottom: 0px;
+		}
+
+    	/* About */
+
+		.aboutOne h2{
+			padding-top: 40px;
+		}
+
+		.aboutTwo h2{
+			padding-top: 0px;
+		}
+
+		/* How It Works */
+
+		#howItWorks {
+		  padding-bottom: 70px;
+		}
+
+		#howItWorks h2 {
+		  margin-top: 50px;
+		}
+
+		#howItWorks .HIWimages{
+			margin-top: 150px;
+			margin-left: -8px;
+		}
+
+		#howItWorks .enjoy{
+			margin-left: 0px;
+		}
+
+
+    	/* Pay It Foward Form */
+
+
+
+		.donateForm{
+			width: 320px !important;
+		}
+
+		.contact{
+			padding: 20px 0px 0px 0px;
+		}
+
+		.contact form{
+
+			height: 840px !important;
+		}
+
+		.panel-body h1{
+			text-align: center;
+			margin-top: 20px;
+			margin-bottom: 20px;
+			line-height: 54px;
+			font-size: 44px;
+		}
+
+		.vertical-center {
+			padding-bottom: 40px;
+		}
+
+		.lunch #body figure{
+			margin-left: -22px !important;
+		}
+
+		#business header{
+		  width: 100%;
+		  margin: 0;
+		  text-align: center;
+		  height: 200px;
+		  padding-top: 120px;
+		}
+
+		#business header h1{
+			margin-top: 0px;
+			font-size: 40px;
+			color:#232837;
+		}
+
+		#business header figure{
+			margin-top: -90px;
+		}
+
+		#business header object{
+			width: 100px;
+		}
+
+
+
+
+		#party .main{
+			background-color: #fff;
+			z-index: 2;
+		}
+
+		#party h1{
+			margin-top: 20px;
+			color: #232938;
+		}
+
+
+    }
+
+    /* Small Devices, Tablets */
+    @media only screen and (max-width : 767px)  {
+
+		/* Navigation */
+
+		.navbar{
+			height: 60px;
+		}
+    	.navbar>.container .navbar-brand, .navbar>.container-fluid .navbar-brand{
+			margin-left: 1px;
+    	}
+
+    	.navbar-brand{
+			background: url(../images/beaverstail_Logo_shrink.svg);
+		  	height: 42px;
+		  	width: 145px;
+		  	margin-top: 3px;
+		  	text-indent: 266%;
+		}
+
+		.order2{
+			float: none;
+			text-align: center;
+			margin-top: -40px;
+			padding-left: 10px;
+		}
+
+
+		.order2 .bttn{
+			font-family: 'Raleway', arial;
+			font-size: 13px;
+			font-weight: 700;
+			color: #fff;
+			background-color: #f26951;
+			border-radius: 6px;
+			padding: 8px;
+			-webkit-box-shadow: 0px 2px #d45b46;
+			-moz-box-shadow: 0px 2px #d45b46;
+			-ms-box-shadow: 0px 2px #d45b46;
+			-o-box-shadow: 0px 2px #d45b46;
+			box-shadow: 0px 2px #d45b46;
+
+
+		}
+
+		.order2 .bttn:hover{
+			-webkit-box-shadow: none;
+			-moz-box-shadow: none;
+			-ms-box-shadow: none;
+			-o-box-shadow: none;
+			box-shadow: none;
+			background-color: #d45b46;
+			margin-top: 2px;
+		}
+
+		.order2 .bttn:active .bbtn:focus .bttn:{
+			-webkit-box-shadow: none;
+			-moz-box-shadow: none;
+			-ms-box-shadow: none;
+			-o-box-shadow: none;
+			box-shadow: none;
+			background-color: #111826;
+			margin-top: 2px;
+		}
+
+		.navbar-toggle{
+			margin-right: 35px;
+			margin-top: 7px;
+			border: none;
+		}
+
+		.navbar-default .navbar-toggle:focus, .navbar-default .navbar-toggle:hover{
+			background: none;
+		}
+
+		.fa-bars{
+			color: #f26951;
+			font-size: 30px;
+		}
+
+		.navbar-header{
+			overflow: hidden;
+			margin-bottom: -4px;
+		}
+
+		.navbar-default .navbar-collapse, .navbar-default .navbar-form{
+			border: none;
+		}
+
+		.navbar-collapse{
+			background-color: #fff;
+		}
+
+		.navbar-collapse ul{
+			background-color: #fff;
+			margin-top: 6px;
+			width: 100%;
+			margin-left: -14px;
+		}
+
+		.navbar-collapse ul li{
+			text-align: left;
+		}
+
+		.navbar-collapse ul li:first-child{
+			padding-top: 10px;
+		}
+
+		.navbar-collapse .order2{
+			margin-top: -196px;
+			margin-right: 39px;
+			float: right;
+		}
+
+		header h1{
+			margin-top:130px;
+		}
+
+
+		/* Menu Modal */
+
+		.modal-body .prices{
+			margin-bottom: -10px;
+		}
+
+		/* How it Works */
+
+		.howItWorks h4 {
+		  margin-bottom: 20px;
+		}
+
+		#howItWorks .HIWimages{
+			margin-top: 50px;
+		}
+
+		.enjoy object {
+			margin-left: 30px;
+		}
+
+		/* Donate Form */
+
+		.donateForm{
+			width: 450px
+		}
+
+		.contact form{
+
+			height: 720px;
+		}
+
+		.orderForm figure{
+			margin-top: 20px;
+			padding-bottom: 20px;
+			width: 94%;
+			width: 94vw;
+		}
+
+		.vertical-center {
+			width: 94%;
+			width: 94vw;
+			padding-bottom: 40px;
+		}
+
+		.lunch #body figure img{
+			width: 150px;
+			margin-bottom: 0px;
+			text-align: center;
+		}
+
+		.lunch #body figure{
+			margin-left: -12px;
+		}
+
+
+		#party header{
+		  height: 100%;
+		  padding-top: 120px;
+		}
+
+		.beaverParty{
+
+			width: 100%;
+			margin: 0 auto;
+			margin-bottom: -5px;
+
+		}
+
+
+    }
+
+
+    /* Medium Devices, Desktops */
+    @media only screen and (min-width: 768px) and (max-width : 991px) {
+
+    	/* Navigation */
+    	.navbar>.container .navbar-brand, .navbar>.container-fluid .navbar-brand{
+			margin-left: -30%;
+    	}
+
+    	.navbar-brand{
+			background: url(../images/beaverstail_Logo_shrink.svg);
+		  	height: 42px;
+		  	width: 145px;
+		  	margin-top: 21px;
+		  	text-indent: 266%;
+		}
+
+		.nav{
+		  float: right;
+		  margin-left: -2px;
+		  margin-top: -40px;
+		}
+
+
+
+
+
+		nav.navbar-default .navbar-nav>li>a {
+			font-size: 14px;
+		}
+
+		.navbar-default .navbar-nav>li {
+			margin-left: -1px;
+
+		}
+
+		header h1{
+			margin-top:130px;
+		}
+
+		#howItWorks .HIWimages{
+			margin-top: 50px;
+		}
+
+		.enjoy object {
+			margin-left: 30px;
+		}
+
+
+		/* Pay It Foward Form */
+		.donateForm{
+		}
+
+		.contact form{
+			margin-top: 60px;
+			margin-bottom: 100px;
+			position: relative;
+			height: 550px;
+		}
+
+		/* Lunch Order */
+
+		.nextButton{
+			margin: 30px 0px;
+			height: 1px;
+		  	padding-bottom: 20px;
+		  	clear: both;
+		}
+
+}
+
+
+    /* Medium Devices, Desktops */
+    @media only screen and (min-width: 992px) and (max-width : 1199px) {
+
+    	.contact form{
+			margin-top: 60px;
+			margin-bottom: 100px;
+			position: relative;
+			height: 550px;
+		}
+    }
+
+    /* Large Devices, Wide Screens */
+    @media only screen and (min-width : 1800px) {
+
+
+				#howItWorks{
+					width: 1800px;
+				}
+				body{
+				 	margin: 0 auto !important;
+				 	max-width: 1800px !important;
+				 	background-color: rgb(244, 244, 244);
+				}
+
+				nav{
+					max-width: 1800px;
+					margin: 0 auto;
+				}
+    }
+
+/* hide ng-cloak elements until angular.js is loaded */
+.ng-cloak {
+  display: none !important;
+}

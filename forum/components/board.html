@@ -1,0 +1,31 @@
+<board title="Board Name" topics=[] >
+
+  <import src="./avatar" />
+
+  <div class="container">
+
+    <!-- heading block -->
+    <div class="row">
+      <div class="col">
+        <h3>{title}</h3>
+      </div>
+    </div>
+
+    <div v-repeat={ topic in topics }>
+
+      <!-- topic line -->
+      <div class="row">
+        <div class="col">
+          <avatar name={ post.user.name } />
+        </div>
+        <div class="col">
+          <div class="row">{ topic.name }</div>
+          <div class="row">{ topic.summary }</div>
+        </div>
+      </div>
+
+    </div><!-- repeat -->
+
+  </div><!-- container -->
+
+</board>

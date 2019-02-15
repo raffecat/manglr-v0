@@ -26,6 +26,7 @@ export class Tag implements Element {
   children: Node[] = [];
   sheet: StyleSheet|null = null; // optional style-sheet to inline.
   elide: boolean = false;
+  tpl: Template|null = null; // for @import attribute.
   constructor(public tag:string, public attribs:AttrMap=new Map()) {}
 }
 
@@ -68,6 +69,15 @@ export class StyleSheet implements Loader {
   }
 }
 
+export class Script implements Loader {
+  fromComponent: boolean = false;
+  usedFrom: string[] = [];
+  script: string = '';
+  constructor(public filename:string, usedIn:string) {
+    this.usedFrom.push(usedIn);
+  }
+}
+
 export class Template implements Loader {
   // contains multiple TagDefn parsed from a single template (file)
   isMain: boolean = false;
@@ -77,6 +87,7 @@ export class Template implements Loader {
   sheetsImported: StyleSheet[] = [];
   inlineFontFace: Tag|null = null; // first style tag encountered with inline-fonts.
   componentStyles: Tag|null = null; // first style tag encountered with component-styles.
+  componentScripts: Tag|null = null; // first script tag encountered with component-scripts.
   testDataUrl: string = '';
   constructor(public filename:string, usedIn:string='') {
     if (usedIn) this.usedFrom.push(usedIn);

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en-AU"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en-AU"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en-AU"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en-AU"> <!--<![endif]-->
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Beaver's Tail | School Lunches Melbourne</title>
+  <meta name="description" content="Running out of lunch ideas? Our selection of healthy lunches makes sure that picky eaters are satisfied!">
+  <meta name="author" content="http://www.alyoop.com.au">
+  <link rel="canonical" href="http://beaverstail.com.au/lunchorder">
+  <meta property="og:site_name" content="Beaver's Tail">
+  <meta property="og:title" content="Beaver's Tail | School Lunches Melbourne">
+  <meta property="og:url" content="http://beaverstail.com.au/lunchorder">
+  <meta property="og:type" content="website">
+  <meta property="og:description" content="Running out of lunch ideas? Our selection of healthy lunches makes sure that picky eaters are satisfied!">
+  <meta property="og:image" content="">
+  <meta itemprop="name" content="Beaver's Tail | School Lunches Melbourne">
+  <meta itemprop="url" content="http://beaverstail.com.au/lunchorder">
+  <meta itemprop="description" content="Running out of lunch ideas? Our selection of healthy lunches makes sure that picky eaters are satisfied!">
+  <meta itemprop="thumbnailUrl" content="images/Social_Image.png">
+
+  <link rel="shortcut icon" type="image/png" href="/favicon.png">
+
+  <!-- Mobile Specific Meta -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+  <!-- Google Fonts and @fontface -->
+  <link href='http://fonts.googleapis.com/css?family=Raleway:600,700,400,300' rel='stylesheet' type='text/css' inline>
+  <link rel="stylesheet" type="text/css" href="css/Klinic_font/stylesheet.css" inline>
+
+  <!--[if lt IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/json2/20160511/json2.min.js"></script>
+  <![endif]-->
+
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+  <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+  <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+  <![endif]-->
+
+  <!-- Bootstrap Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/styles.css?v=8">
+  <style> .no-script .hide-if-no-script { display:none; } .js-hidden { display:none; } </style>
+</head>
+<body class="no-script">
+  <script> document.body.className=""; /* remove class="no-script" */ </script>
+
+  <section class="lunch lunch2">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="margin-bottom:40px">
+
+          <figure class="text-center" style="margin:40px; height:100px">
+            <object type="image/svg+xml" data="images/beaverLogo2.svg" class="logo">
+              Beaver's Tail <!-- fallback image in CSS -->
+            </object>
+          </figure>
+
+          <noscript>
+            <div class="panel-body">
+              <div class="text-center" style="padding: 1em 3.5em;">
+                <h2>Javascript is blocked!</h2>
+                <p class="lead">To place an order on Beaver's Tail, your web browser must allow <em>javascript</em>. Please set your web browser to allow javascript, and then <a href="/lunchorder">click here</a>.</p>
+              </div>
+            </div>
+          </noscript>
+
+          <div class="panel-body hide-if-no-script">
+
+            <section id="header">
+              <h1>Lunch Order</h1>
+              <p class="note-cb" style="font-weight:normal">Lunch orders are available every&nbsp;school&nbsp;day.<br>Orders must be completed before <strong>9 am</strong>.</p>
+              <h4 id="js-orders-loading" style="color:#aaa; font-weight:100; font-style:italics;">fetching order date&hellip; <span><i class="fa fa-spinner fa-pulse"></i></span></h4>
+              <div class="js-hidden" id="js-orders-closed" style="margin-bottom:1em; text-align:center; font-size:200%; color: #923;">
+                <div style="height:20px; max-width:300px; margin-left:auto; margin-right:auto; border: 0px solid silver; border-top-width: 1px;"></div>
+                <strong>Orders for today's lunch have&nbsp;closed.</strong>
+                <div style="height:20px; max-width:300px; margin-left:auto; margin-right:auto; border: 0px solid silver; border-bottom-width: 1px;"></div>
+              </div>
+              <h4 class="js-hidden" id="js-orders-loaded">Place an order for <span class="bold" id="js-order-day" style="white-space:nowrap"></span> &ndash; <span id="js-order-date" style="white-space:nowrap"></span></h4>
+            </section> <!-- #/Header -->
+
+            <section id="menu">
+
+              <component name="menu-section">
+                <div class="row text-center" style="padding-top:4em">
+                  <h3 class="col-lg-12 col-md-12 col-sm-12 col-xs-12"><slot /></h3>
+                </div>
+              </component>
+
+              <component name="menu-row">
+                <div class="{class} row text-center">
+                  <slot />
+                </div>
+              </component>
+
+              <component name="sandwich">
+                <div class="radio col-lg-4 col-md-4 col-sm-12 col-xs-12 text-center">
+                  <figure class="lunchFigure"><img src="images/{ img }" alt=""></figure>
+                  <h4>{ name }</h4>
+                  <p>{ desc }</p>
+                  <div class="sandwichOpts">
+                    <label>
+                      <input type="radio" name="sw-{sku}" value="small-{sku},400,1"> $4.00 Small
+                    </label>
+                    <br>
+                    <label>
+                      <input type="radio" name="sw-{sku}" value="large-{sku},500,1"> $5.00 Large
+                    </label>
+                    <br>
+                    <label>
+                      <input type="radio" name="sw-{sku}" value="gf-{sku},600,1"> $6.00 Gluten-free
+                    </label>
+                    <br>
+                    <label>
+                      <input type="radio" name="sw-{sku}" value="" class="js-radio-init"> No thanks
+                    </label>
+                  </div>
+                </div>
+              </component>
+
+              <component name="menu-item">
+                <div class="radio col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                  <figure class="lunchFigure"><img src="images/{ img }" alt="" style="{ img-fix }"></figure>
+                  <h4>{ name }</h4>
+                  <p>{ desc }</p>
+                  <div class="sandwichOpts">
+                    <label>
+                      <input type="radio" name="{sku}" value="{sku},{price},1"> ${ price / 100 | decimal 2 } One { one }
+                    </label>
+                    <br>
+                    <label if="{two}">
+                      <input type="radio" name="{sku}" value="{sku},{price},2"> ${ price * 2 / 100 | decimal 2 } Two { two }
+                    </label>
+                    <br if="{two}">
+                    <label if="{three}">
+                      <input type="radio" name="{sku}" value="{sku},{price},3"> ${ price * 3 / 100 | decimal 2 } Three { two }
+                    </label>
+                    <br if="{three}">
+                    <label>
+                      <input type="radio" name="{sku}" value="" class="js-radio-init"> No thanks
+                    </label>
+                  </div>
+                </div>
+              </component>
+
+              <menu-section>Sandwich Rolls</menu-section>
+              <menu-row class="sandwiches">
+                <sandwich name="Mountain" desc="Ham, cheese, lettuce, onions" img="mountain.svg" sku="mountain" />
+                <sandwich name="Atlantic" desc="Salmon, lettuce, chives" img="atlantic.svg" sku="atlantic" />
+                <sandwich name="Tuna" desc="Tuna, parsley, lemon juice, purple onion and lettuce" img="tuna.svg" sku="tuna-lett" />
+              </menu-row>
+              <menu-row class="sandwiches">
+                <sandwich name="Vegetarian" desc="Avocado, tomato, cucumber, lettuce and onion" img="Vegeterian.svg" sku="vegetarian" />
+                <sandwich name="Ham and Cheese" desc="Ham and cheese" img="hamandcheese.svg" sku="ham-cheese" />
+                <sandwich name="Caesar" desc="Chicken, lettuce and Caesar sauce" img="ceaser.svg" sku="chic-caesar" />
+              </menu-row>
+              <menu-row class="sandwiches">
+                <sandwich name="Vegemite and Cheese" desc="Vegemite and Cheese" img="vegemiteandchese.svg" sku="vegemite-cheese" />
+                <sandwich name="Chicken Schnitzel" desc="Chicken Schnitzel, Lettuce and Mayo" img="ChickenSnitzel.svg" sku="chic-schnit" />
+                <sandwich name="Jelly Sandwich" desc="Jam Sandwich" img="jelly.svg" sku="jelly-sw" />
+              </menu-row>
+
+              <menu-section>Salads</menu-section>
+              <menu-row class="extras">
+                <menu-item name="Brainy Box" desc="Celery, Carrot, Cheese, Cucumber" img="brainyBox.svg" sku="salad-brainy" price="500" one="Brainy Box" />
+                <menu-item name="Seasonal Fruit Salad" desc="Fruits in season" img="seaosnalFruitSalad.svg" sku="salad-fruit" price="600" one="Fruit Salad" />
+              </menu-row>
+
+              <menu-section>Hot Food</menu-section>
+              <menu-row class="extras">
+                <menu-item name="Superfamous Sausage Roll" desc="Pork, fennel" img="sausageRollSuperfamous.svg" sku="superfamous-roll" price="450" one="Sausage Roll" two="Sausage Rolls" />
+                <menu-item name="Spinach and Ricotta Sausage Roll" desc="Spinach and Ricotta" img="spinachRicottaSausageRoll.svg" sku="spinach-ricotta-roll" price="450" one="Sausage Roll" two="Sausage Rolls" />
+                <menu-item name="Humble Beef Sausage Roll" desc="Beef" img="sausageRoll.svg" sku="humble-beef-roll" price="450" one="Sausage Roll" two="Sausage Rolls" />
+              </menu-row>
+              <menu-row class="extras">
+                <menu-item name="The Classic Party Pie" desc="Beef" img="partyPie.svg" img-fix="width:220px; padding-top:30px" sku="classic-party-pie" price="300" one="Party Pie" two="Party Pies" three />
+              </menu-row>
+
+              <menu-section>Sushi</menu-section>
+              <menu-row class="sushi">
+                <menu-item name="Cooked Tuna and Avocado" desc="Cooked tuna, fresh avocado &amp; mayonnaise" img="cookedtuna.svg" sku="tuna-avo-sushi" price="250" one="Roll" two="Rolls" three />
+                <menu-item name="Avocado and Cucumber" desc="Fresh avocado, cucumber &amp; mayonnaise" img="avocado.svg" sku="avo-cuc-sushi" price="250" one="Roll" two="Rolls" three />
+                <menu-item name="Chicken Teriyaki" desc="Chicken marinated in teriyaki sauce with lettuce &amp; mayonnaise" img="chicken.svg" sku="chic-teri-sushi" price="250" one="Roll" two="Rolls" three />
+              </menu-row>
+              <menu-row class="sushi">
+                <menu-item name="Tuna" desc="Cooked tuna, lettuce &amp; mayonnaise" img="tunaSushi.svg" sku="tuna-lett-sushi" price="250" one="Roll" two="Rolls" three />
+                <menu-item name="Vegetable" desc="Cucumber, carrot, tofu &amp; mayonnaise" img="cucumber.svg" sku="vegetable-sushi" price="250" one="Roll" two="Rolls" three />
+                <menu-item name="Smoked Salmon" desc="Smoked salmon, lettuce &amp; mayonnaise" img="smokedSalmon.svg" sku="salmon-sushi" price="250" one="Roll" two="Rolls" three />
+              </menu-row>
+
+              <menu-section>Sweets</menu-section>
+              <menu-row class="sweets">
+                <menu-item name="Blueberry and Chocolate Muffin" desc="" img="muffin.svg" sku="blueberry-choc-muffin" price="250" one="Muffin" />
+                <menu-item name="Chocolate cookie" desc="" img="cookie.svg" sku="choc-cookie" price="250" one="Cookie" />
+              </menu-row>
+
+            </section>
+
+
+            <section id="form">
+
+              <form>
+                <div class="form-group col-lg-6 col-md-6 col-sm-12 col-xs-12 input input--isao">
+                  <select class="form-control input__field input__field--isao js-field" id="js-school" required js-name="school" js-error="Please select your school">
+                    <option selected disabled></option>
+                  </select>
+                  <label class="input__label input__label--isao" for="js-school" data-content="School">
+                    <span class="input__label-content input__label-content--isao">School</span>
+                  </label>
+                </div>
+
+                <div class="form-group col-lg-6 col-md-6 col-sm-12 col-xs-12 input input--isao">
+                  <select class="form-control input__field input__field--isao js-field" id="js-class" required js-name="class" js-error="Please select your class">
+                    <option selected disabled></option>
+                  </select>
+                  <label class="input__label input__label--isao" for="js-class" data-content="Class">
+                    <span class="input__label-content input__label-content--isao">Class</span>
+                  </label>
+                </div>
+
+                <div class="form-group col-lg-6 col-md-6 col-sm-12 col-xs-12 input input--isao">
+                  <input type="text" id="p2-name" class="form-control input__field input__field--isao js-field" required maxlength="100" js-name="name" js-error="Please enter your child's name">
+                  <label class="input__label input__label--isao" for="p2-name" data-content="Student Name">
+                    <span class="input__label-content input__label-content--isao">Student Name</span>
+                  </label>
+                </div>
+
+                <div class="form-group col-lg-6 col-md-6 col-sm-12 col-xs-12 input input--isao">
+                  <input type="text" id="p2-phone" class="form-control input__field input__field--isao js-field" required maxlength="20" js-name="phone" js-error="Please enter a contact phone number">
+                  <label class="input__label input__label--isao" for="p2-phone" data-content="Contact Number">
+                    <span class="input__label-content input__label-content--isao">Contact Number</span>
+                  </label>
+                </div>
+
+                <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12 input input--isao">
+                  <input type="text" id="p2-allergy" class="form-control input__field input__field--isao js-field" maxlength="200" js-name="allergies">
+                  <label class="input__label input__label--isao" for="p2-allergy" data-content="Please alert us to any food allergies">
+                    <span class="input__label-content input__label-content--isao">Please alert us to any <strong><em>food allergies</em></strong></span>
+                  </label>
+                </div>
+
+              </form>
+
+              <div class="text-center" style="clear:both">
+                <p class="error js-hidden" id="js-top-error"></p>
+              </div>
+
+            </section>
+
+
+            <section id="submit">
+              <div>
+                <h2>Total: $<span id="js-total">&mdash;</span></h2>
+                <p id="js-no-total" style="margin: 4px 0 0 0">Please complete your selection from the menu to display the order total.</p>
+                <p id="js-ready-to-pay" style="display:none; margin: 4px 0 0 0">To confirm your order, please pay with PayPal.</p>
+                <p id="js-please-wait" style="display:none; margin: 4px 0 0 0"><span><i class="fa fa-spinner fa-pulse"></i></span> Please wait a moment&hellip;</p>
+                <p id="js-cannot-submit" style="display:none; margin: 4px 0 0 0; color:#c44;">There was a problem submitting your order. Please try again in a few minutes, or contact us on <a style="color:#c44" href="tel:1300287785">1300 287 785</a>.</p>
+                <img id="js-submit-btn" role="button" src="https://www.paypalobjects.com/webstatic/en_US/btn/btn_checkout_pp_142x27.png">
+              </div>
+            </section>
+
+          </div><!-- ./panel-body -->
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer @import="components/footer.html">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="scripts/lunch.js?v=1"></script>
+
+  <google-ga token="UA-81795704-1" @import="components/google-ga.html" />
+
+</body>
+</html>

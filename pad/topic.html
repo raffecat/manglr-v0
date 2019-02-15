@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+
+  <title>PangurPad</title>
+
+  <meta property="og:title" content="PangurPad Creative Writing Community">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="forum/images/logo.png">
+  <meta property="og:site_name" content="PangurPad">
+
+  <style inline-fonts>
+    @font-face {
+      font-family: 'Varela Round';
+      font-style: normal;
+      font-weight: 400;
+      src: local('Varela Round'), local('VarelaRound-Regular'), url(http://themes.googleusercontent.com/static/fonts/varelaround/v3/APH4jr0uSos5wiut5cpjrqRDOzjiPcYnFooOUGCOsRk.woff) format('woff');
+    }
+  </style>
+  <link rel="stylesheet" href="forum/reset-min.css" inline>
+  <style component-styles></style>
+
+  <link rel="stylesheet" href="forum/styles.css">
+  <link rel="stylesheet" href="forum/community.css">
+
+  <link rel="test-data" href="topic-data.json">
+
+  <import src="header-nav.html" />
+  <import src="forum-topic.html" />
+  <import src="forum-post.html" />
+  <import src="forum-reply.html" />
+  <import src="forum-nav.html" />
+  <import src="site-footer.html" />
+
+  <!--[if lt IE 9]><script src="js/html5.js"></script><![endif]-->
+
+</head>
+<body>
+  <div class="contentWrapper">
+    <header-nav />
+    <div class="pageContent">
+      <forum-topic forum="{ forum }" topic="{ topic }" />
+      <div class="forumPosts">
+        <forum-post repeat="post in posts" post="{ post }" />
+      </div>
+      <forum-nav />
+      <forum-reply />
+    </div>
+    <div class="push"></div>
+  </div>
+  <site-footer />
+</body>
+</html>

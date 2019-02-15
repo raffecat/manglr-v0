@@ -1,0 +1,295 @@
+
+<!-- GitHub API -->
+
+<h3>Last 3 Pull Requests to Ember.js</h3>
+<ul>
+  <state page=1 />
+  <store id="@pulls" src="https://api.github.com/repos/emberjs/ember.js/pulls?page={page}&amp;per_page=3"/>
+  <li each="{pr in @pulls | sort title,id}">
+    <div class="issue-number">#{pr.number}</div>
+    <div class="issue-title">
+      <a href="{pr.html_url}">{pr.title}</a>
+    </div>
+    <div class="author-name">
+      Opened by <a href="{pr.head.user.html_url}"><strong>@{pr.head.user.login}</strong></a>
+    </div>
+  </li>
+  <button on-click="next-page">Next Page</button>
+  <action id="next-page">
+    page = page + 1;
+  </action>
+</ul>
+
+
+<!-- Gravatar Search -->
+
+<ul class="example-gravatar">
+  <li><gravatar-search email="tomster@emberjs.com" size="200"/></li>
+  <li><gravatar-search size="200"/></li>
+</ul>
+
+<component name="gravatar-search" attribs="email size=200">
+  <img src="http://www.gravatar.com/avatar/{search|input_timer:500|lowercase|md5}?s={size}">
+  <div class="email-input">
+    <input type="email" value="email" as="search" placeholder="Enter your Gravatar e-mail">
+  </div>
+</component>
+
+
+<!-- Mailbox with REST APIs -->
+
+<aside>
+  <ul>
+    <li><h2>Mailboxes</h2></li>
+    <model id="@boxes" src="/api/mailboxes" refresh-action="refresh-boxes"/>
+    <li each="{mailbox in @boxes}">
+      <a .current="{route-link-active}" route-link="/mail/{mailbox.id}">
+        <span class="count">
+          {mailbox.messages}
+        </span>
+        {mailbox.name}
+      </a>
+    </li>
+  </ul>
+</aside>
+<section class="main">
+  <tomster />
+</section>
+
+<component name="tomster">
+  <div class="index">
+    <h1>TomsterMail</h1>
+    <mailbox if-route="/mail/{id}" box="{id}"/>
+  </div>
+</component>
+
+<component name="mailbox" attribs="box">
+  <model id="@messages" src="/api/messages?mailbox={box}" refresh-action="refresh-messages"/>
+  <table>
+    <tr>
+      <th>Date</th>
+      <th>Subject</th>
+      <th>From</th>
+      <th>To</th>
+    </tr>
+    <tr each="{message in @messages}" .selected="{route-link-active}" route-link="/mail/{box}/{message.id}">
+      <td>{message.date | date}</td>
+      <td>{message.subject}</td>
+      <td>{message.from}</td>
+      <td>{message.to}</td>
+    </tr>
+  </table>
+  <route-select>
+    <message if-route="/mail/{box}/{msgid}" msg="{msgid}"/>
+    <mailbox-empty/>
+  </route-select>
+</component>
+
+<component name="mailbox-empty">
+  <div class="mailbox-index">
+    Select an email
+  </div>
+</component>
+
+<component name="message" attribs="msg">
+  <model id="@mail" src="/api/message?message={msg}"/>
+  <div class="mail">
+    <dl>
+      <dt>From</dt>
+      <dd>{@mail.from}</dd>
+      <dt>To</dt>
+      <dd>{@mail.to}</dd>
+      <dt>Date</dt>
+      <dd>{@mail.date | date}</dd>
+    </dl>
+    <h4>{@mail.subject}</h4>
+    <p>{@mail.body}</p>
+  </div>
+</component>
+
+<testdata url="/api/mailboxes">
+  { name: "Inbox", id: "inbox", messages: 2 }
+  { name: "Spam", id: "spam", messages: 1 }
+  { name: "Sent Mail", id: "sent-mail", messages: 1 }
+</testdata>
+
+<testdata url="/api/messages?mailbox={$box} /api/message?message={id}|one">
+  { $box: "inbox",
+    id: 1,
+    subject: "Welcome to Ember",
+    from: "tomster@emberjs.com",
+    to: "user@example.com",
+    date: "2017-09-08T06:52:32.806Z",
+    body: "Welcome to Ember. We hope you enjoy your stay"
+  }
+  {
+    $box: "inbox",
+    id: 2,
+    subject: "Great Ember Resources",
+    from: "tomster@emberjs.com",
+    to: "user@example.com",
+    date: "2017-09-08T06:52:32.806Z",
+    body: "Have you seen embercasts.com? How about emberaddons.com?"
+  }
+  {
+    $box: "spam",
+    id: 3,
+    subject: "You have one the lottery!!!111ONEONE",
+    from: "419@thereallotteryhonest.com",
+    to: "user@example.com",
+    date: "2017-09-08T06:52:32.806Z",
+    body: "You have ONE the lottery! You only have to send us a small amount of monies to claim your prize"
+  }
+  {
+    $box: "sent-mail",
+    id: 4,
+    subject: "Should I use Ember",
+    from: "user@example.com",
+    to: "tomster@emberjs.com",
+    date: "2017-09-08T06:52:32.806Z",
+    body: "Ember looks pretty good, should I use it?"
+  }
+</testdata>
+
+
+<!-- Mailbox with GraphQL -->
+
+<aside>
+  <ul>
+    <li><h2>Mailboxes</h2></li>
+    <model id="@boxes" graphql="/api/graphql" refresh-action="refresh-boxes">
+      query {
+        mailbox {
+          id, name, length
+        }
+      }
+    </model>
+    <li each="{mailbox in @boxes.mailbox}">
+      <a .current="{route-link-active}" route-link="/mail/{mailbox.id}">
+        <span class="count">
+          {mailbox.length}
+        </span>
+        {mailbox.name}
+      </a>
+    </li>
+  </ul>
+</aside>
+<section class="main">
+  <tomster />
+</section>
+
+<component name="tomster">
+  <div class="index">
+    <h1>TomsterMail</h1>
+    <mailbox if-route="/mail/{id}" box="{id}"/>
+  </div>
+</component>
+
+<component name="mailbox" attribs="box">
+  <model id="@messages" graphql="/api/graphql" refresh-action="refresh-messages">
+    query {
+      mailbox(id: $box) {
+        message {
+          stuff
+        }
+      }
+    }
+  </model>
+
+  <table>
+    <tr>
+      <th>Date</th>
+      <th>Subject</th>
+      <th>From</th>
+      <th>To</th>
+    </tr>
+    <tr each="{message in @messages}" .selected="{route-link-active}" route-link="/mail/{box}/{message.id}">
+      <td>{message.date | date}</td>
+      <td>{message.subject}</td>
+      <td>{message.from}</td>
+      <td>{message.to}</td>
+    </tr>
+  </table>
+  <route-select>
+    <message if-route="/mail/{box}/{msgid}" msg="{msgid}"/>
+    <mailbox-empty/>
+  </route-select>
+</component>
+
+<component name="mailbox-empty">
+  <div class="mailbox-index">
+    Select an email
+  </div>
+</component>
+
+<component name="message" attribs="msg">
+  <model id="@mail" graphql="mailboxes[box].messages[]"/>
+  <div class="mail">
+    <dl>
+      <dt>From</dt>
+      <dd>{@mail.from}</dd>
+      <dt>To</dt>
+      <dd>{@mail.to}</dd>
+      <dt>Date</dt>
+      <dd>{@mail.date | date}</dd>
+    </dl>
+    <h4>{@mail.subject}</h4>
+    <p>{@mail.body}</p>
+  </div>
+</component>
+
+<testdata url="/api/graphql">
+{
+  "data": {
+    "mailboxes": [
+      {
+        name: "Inbox",
+        id: "inbox",
+        messages: [
+          {
+            id: 1,
+            subject: "Welcome to Ember",
+            from: "tomster@emberjs.com",
+            to: "user@example.com",
+            date: "2017-09-08T06:52:32.806Z",
+            body: "Welcome to Ember. We hope you enjoy your stay"
+          }, {
+            id: 2,
+            subject: "Great Ember Resources",
+            from: "tomster@emberjs.com",
+            to: "user@example.com",
+            date: "2017-09-08T06:52:32.806Z",
+            body: "Have you seen embercasts.com? How about emberaddons.com?"
+          }
+        ]
+      }, {
+        name: "Spam",
+        id: "spam",
+        messages: [
+          {
+            id: 3,
+            subject: "You have one the lottery!!!111ONEONE",
+            from: "419@thereallotteryhonest.com",
+            to: "user@example.com",
+            date: "2017-09-08T06:52:32.806Z",
+            body: "You have ONE the lottery! You only have to send us a small amount of monies to claim your prize"
+          }
+        ]
+      }, {
+        name: "Sent Mail",
+        id: "sent-mail",
+        messages: [
+          {
+            id: 4,
+            subject: "Should I use Ember",
+            from: "user@example.com",
+            to: "tomster@emberjs.com",
+            date: "2017-09-08T06:52:32.806Z",
+            body: "Ember looks pretty good, should I use it?"
+          }
+        ]
+      }
+    ]
+  }
+}
+</testdata>

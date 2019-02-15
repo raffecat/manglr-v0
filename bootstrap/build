@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+uglifyjs -c 'warnings,hoist_vars,hoist_funs,ie8,passes=2,pure_funcs="log,console.log"' -m 'reserved=log' --mangle-props keep_quoted --ie8 --warn -- src/manglr-bind.js >a.js
+gzip -k -9 -f a.js
+gzip -k -9 -f b.js

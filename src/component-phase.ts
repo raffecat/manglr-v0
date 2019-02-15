@@ -7,6 +7,7 @@ import { reconstitute, reportUnused, assertEmpty } from './report';
 import { parseStyleSheet } from './parse-css';
 
 const validForStyleTag = new Set(['type', 'inline-fonts', 'component-styles']);
+const validForScriptTag = new Set(['src', 'type', 'component-scripts']);
 const validForLinkCSS = new Set(['rel', 'href', 'inline', 'bundle']);
 const validForImportTag = new Set(['src']);
 
@@ -132,21 +133,27 @@ function parseLinkRelTag(ps:ParserState, tpl:ast.Template, defn:ast.TagDefn, nod
   assertEmpty(ps, node, filename);
 }
 
-function parseStyleTag(ps:ParserState, tpl:ast.Template, defn:ast.TagDefn, node:ast.Tag) {
-  // collect the text node(s) inside the tag.
-  const filename = tpl.filename;
+function collectText(ps:ParserState, tpl:ast.Template, node:ast.Tag) {
   const fragments: string[] = [];
   for (let child of node.children) {
     if (child instanceof ast.Text) {
       fragments.push(child.text);
     } else {
-      ps.error('unexpected tag <'+child.tag+'> inside style tag: '+reconstitute(node)+' in: '+filename);
+      ps.error('unexpected tag <'+child.tag+'> inside '+reconstitute(node)+' tag in: '+tpl.filename);
     }
   }
+  return fragments.join("");
+}
 
+function parseStyleTag(ps:ParserState, tpl:ast.Template, defn:ast.TagDefn, node:ast.Tag) {
+  // collect the text node(s) inside the tag.
+  const styleText = collectText(ps, tpl, node);
+  node.children.length = 0;
+
+  const filename = tpl.filename;
   const sheet = new ast.StyleSheet(filename, filename);
   ps.allStyleSheets.push(sheet);
-  parseStyleSheet(ps, sheet, fragments.join(""));
+  parseStyleSheet(ps, sheet, styleText);
   node.sheet = sheet;
 
   if (!tpl.isMain) {
@@ -177,6 +184,33 @@ function parseStyleTag(ps:ParserState, tpl:ast.Template, defn:ast.TagDefn, node:
   reportUnused(ps, node, validForStyleTag, filename);
 }
 
+function parseScriptTag(ps:ParserState, tpl:ast.Template, defn:ast.TagDefn, node:ast.Tag) {
+  // collect the text node(s) inside the tag.
+  const scriptText = collectText(ps, tpl, node);
+  node.children.length = 0;
+
+  const filename = tpl.filename;
+  const script = new ast.Script(scriptText, filename);
+  ps.allScripts.push(script);
+
+  if (!tpl.isMain) {
+    // tag the script for the 'component-scripts' directive.
+    script.fromComponent = true;
+  }
+
+  // component-scripts
+  // collect inline <script> tags from all components in this script tag.
+  if (node.attribs.get('component-scripts') != null) {
+    if (script.fromComponent) {
+      ps.error('cannot apply the "component-scripts" attribute to a <script> tag inside a component, in '+filename);
+    } else if (tpl.componentScripts == null) {
+      tpl.componentScripts = node;
+    }
+  }
+
+  reportUnused(ps, node, validForScriptTag, filename);
+}
+
 function findComponents(ps:ParserState, tpl:ast.Template, defn:ast.TagDefn, nodelist:ast.Node[]) {
   // phase 1: find "import" and inline "component" nodes.
   for (let node of nodelist) {
@@ -201,7 +235,19 @@ function findComponents(ps:ParserState, tpl:ast.Template, defn:ast.TagDefn, node
         case 'style':
           parseStyleTag(ps, tpl, defn, node);
           break;
+        case 'script':
+          parseScriptTag(ps, tpl, defn, node);
+          break;
         default:
+          // define a local component if the tag has an @import attribute.
+          const src = node.attribs.get('@import');
+          if (src) {
+            if (ps.debugLevel) ps.debug(`=> @import: '${src}' in ${tpl.filename}`);
+            const pendingTpl = ps.useTemplate(src, tpl.filename);
+            defn.tplsImported.push(pendingTpl);
+            node.attribs.delete('@import');
+            node.tpl = pendingTpl; // for output phase.
+          }
           // walk child nodes recursively.
           findComponents(ps, tpl, defn, node.children);
           break;

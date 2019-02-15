@@ -1,0 +1,258 @@
+
+<img src="foo" add-size>  ->  <img src="foo" width="232" height="181">
+
+async/progressive template loading: http://www.dustjs.com/
+
+postcss-icss-selectors
+
+import stripIndent from "strip-indent";
+const strip = input => stripIndent(input).trim();
+
+# Consolidated thoughts on MobX and React
+
+I don't much see the point in turning HTML markup into a function,
+which cannot be (programmatically) inspected, manipulated or transformed.
+-> essentially, de-optimising for developer convenience.
+
+The argument used to go: don't embed javascript in your templates.
+Now, with React: do embed (the same) javascript in your templates,
+but that's ok, because your templates are now embedded in javascript.
+
+Well. If you're allowed to embed a bit of javascript in your templates now,
+and run it through a compiler, there is far more you can do, and with less code.
+
+If the first token in a component is 'class' or 'style', parse it as a Marko
+component - or if the import filename ends with '.marko'
+
+https://codyhouse.co/gem/parallax-hero-image/
+
+unsplash.com and subtlepatterns.com
+Nucleo is a beautiful library of 21771 icons: nucleoapp.com
+
+<popdown-header after="800px">
+</popdown-header>
+
+<img-box>
+  <img offset=100 src="background.png">
+  <img offset=150 src="middle.png">
+  <img offset=200 src="top.png">
+</img-box>
+
+window.scrollY (sub-pixel precise; Math.round)
+window.pageYOffset (better compatibility)
+window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
+
+on 'scroll' event (or any parent offsetTop change!)
+  boxTop = elem.getBoundingClientRect().top;
+  ofsY = -(boxTop / speed);
+  "transform: translateY({ ofsY }px);"
+
+--------------[ React/MobX example ]--------------
+
+import React, {Component} from 'react';
+import ReactDOM from 'react-dom';
+import {observer} from "mobx-react";
+
+@observer
+class TodoListView extends Component {
+    render() {
+        return <div>
+            <ul>
+                {this.props.todoList.todos.map(todo =>
+                    <TodoView todo={todo} key={todo.id} />
+                )}
+            </ul>
+            Tasks left: {this.props.todoList.unfinishedTodoCount}
+        </div>
+    }
+}
+
+const TodoView = observer(({todo}) =>
+    <li>
+        <input
+            type="checkbox"
+            checked={todo.finished}
+            onClick={() => todo.finished = !todo.finished}
+        />{todo.title}
+    </li>
+)
+
+const store = new TodoList();
+ReactDOM.render(<TodoListView todoList={store} />, document.getElementById('mount'));
+
+--------------[ .d.ts ]--------------
+
+https://www.typescriptlang.org/docs/handbook/declaration-files/by-example.html#reusable-types-interfaces
+
+interface Options {
+  context: string,
+  hashPrefix: string,
+}
+
+type Generator = (localName: string, filepath: string) => string;
+
+declare function createGenerator(pattern: string, options?: Partial<Options>): Generator;
+
+export = createGenerator;
+
+-------------------------------------
+
+# Marko
+
+https://github.com/patrick-steele-idem/morphdom
+https://github.com/lasso-js/lasso
+
+Note: The code in the style {} section is processed in a context that is separate from
+the rest of the template so so you won't be able to use JavaScript variables inside
+the style section. If you need variables in your CSS then you will need to use a CSS
+pre-processor that supports variables. Ugh.
+
+component.js: If you're targeting a browser that does not support classes,
+a plain object may also be exported !? Ugh.
+
+-------------------------------------
+
+# CSSTree
+
+https://astexplorer.net/#/gist/244e2fb4da940df52bf0f4b94277db44/e79aff44611020b22cfd9708f3a99ce09b7d67a8
+
+-------------------------------------
+
+# MobX
+
+https://mobx.js.org/index.html
+https://mobx.js.org/getting-started.html
+https://medium.com/@mweststrate/becoming-fully-reactive-an-in-depth-explanation-of-mobservable-55995262a254
+https://github.com/mobxjs/mobx-react-typescript-boilerplate
+
+
+class ObservableTodoStore {
+  @observable todos = [];
+  @observable pendingRequests = 0;
+
+  constructor() {
+    mobx.autorun(() => console.log(this.report));
+  }
+
+  @computed get completedTodosCount() {
+    return this.todos.filter(
+      todo => todo.completed === true
+    ).length;
+  }
+
+  @computed get report() {
+    if (this.todos.length === 0)
+      return "<none>";
+    return `Next todo: "${this.todos[0].task}". ` +
+      `Progress: ${this.completedTodosCount}/${this.todos.length}`;
+  }
+
+  addTodo(task) {
+    this.todos.push({
+      task: task,
+      completed: false,
+      assignee: null
+    });
+  }
+}
+
+const observableTodoStore = new ObservableTodoStore();
+
+
+-------------------------------------
+
+https://github.com/posthtml/posthtml
+https://github.com/css-modules/postcss-modules
+https://github.com/posthtml/posthtml-custom-elements/blob/master/index.js
+https://github.com/css-modules/icss
+https://github.com/csstree/csstree
+
+
+# posthtml/posthtml-modules
+
+<module href="./module.html">
+  title
+</module>
+
+<!-- module.html -->
+<header>
+  <h1>
+    Test <content></content>
+  </h1>
+</header>
+
+
+# posthtml/inline-assets
+
+https://github.com/jonathantneal/posthtml-inline-assets
+
+inline: [image, script, style]
+
+<!-- BEFORE -->
+<link href="body.css" rel="stylesheet" class="body-style">
+<!-- AFTER -->
+<style class="body-style">body { background-color: black; color: white; }</style>
+
+require('posthtml-inline-assets').process(YOUR_HTML, {
+  inline: {
+    picture: {
+      check: function (node) {
+        return node.tag === 'picture' && node.attrs && node.attrs.src;
+      },
+      then: function (node, data) {
+        node.tag = 'img';
+        node.attrs.src = 'data:' + data.mime + ';base64,' + data.buffer.toString('base64');
+      }
+    }
+  }
+});
+
+
+
+# posthtml/posthtml-expressions
+
+<div class="{{ className }}">
+  My name is {{ name }}
+</div>
+<p class="{{ env === 'production' ? 'active' : 'hidden' }}">in production!</p>
+<p>The fox said, {{{ unescapedMarkip }}}</p>
+
+<if condition="foo === 'bar'">
+  <p>Foo really is bar! Revolutionary!</p>
+</if>
+
+<elseif condition="foo === 'wow'">
+  <p>Foo is wow, oh man.</p>
+</elseif>
+
+<else>
+  <p>Foo is probably just foo in the end.</p>
+</else>
+
+<each loop="item, index in array">
+  <p>{{ index }}: {{ item }}</p>
+</each>
+
+<each loop="value, key in anObject">
+  <p>{{ key }}: {{ value }}</p>
+</each>
+
+<switch expression="foo">
+  <case n="'bar'">
+    <p>Foo really is bar! Revolutionary!</p>
+  </case>
+  <case n="'wow'">
+    <p>Foo is wow, oh man.</p>
+  </case>
+  <default>
+    <p>Foo is probably just foo in the end.</p>
+  </default>
+</switch>
+
+<scope with="author">
+  <include src="components/profile.html"></include>
+</scope>
+<scope with="editor">
+  <include src="components/profile.html"></include>
+</scope>
+

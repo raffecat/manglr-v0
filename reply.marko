@@ -1,0 +1,57 @@
+<forum-reply editPost="">
+  <link rel="stylesheet" href="grande/css/menu.css">
+  <link rel="stylesheet" href="grande/css/editor.css">
+
+  <div class="forumReply corners">
+    <div class="inner fleft"><a id="replyForm"></a>
+      <div id="editPostInfo" if="editPost">
+        <div class="fright">
+          <a class="cancelEditPost" role="button"><img src="/pad/forum/images/remove.png"> discard changes</a>
+        </div>
+        <div class="pencilBox">
+          <img src="/pad/forum/images/pencil.png">
+          editing post <a id="editPostBackRef" href="#{ editPost.id }">#{ editPost.id }
+          <img class="arrow" src="/pad/forum/images/arrow_right.png"></a>
+        </div>
+      </div>
+      <section class="g-body">
+        <article id="postEditor" contenteditable="true">
+          <h2>Welcome, this is grande.js</h2>
+          <blockquote>"Make every detail perfect and limit the number of details to perfect." - Jack Dorsey</blockquote>
+          <p>Style your text to how you <b>think</b> and put the <i>feeling</i> into your words. Just select any text and choose how you want it to look from the menu.</p>
+          <ul>
+          <li>Create a bulleted list simply by typing "- " or "* " and hitting enter</li>
+          </ul>
+          <ol>
+          <li>Assign the most important tasks in your day by starting the line with "1. "</li>
+          <li>What's on your mind today?</li>
+          </ol>
+          <p><i>Two enters</i> to create a divider to separate your content.</p>
+          <p>Let your users express themselves. Take a look at the project on Github <a href="github.com/mduvall/grande.js">here</a>.</p>
+        </article>
+      </section>
+    </div>
+    <div class="author fright">
+      <div class="forumAuthor">
+        <div class="icons"><img src="/pad/forum/images/catWhite.png" title="Staff member"></div>
+        <div class="nameplate">
+          <div class="avatar">
+            <a href="/profiles/mario"><img src="/pad/avatar/62b8ba933cd0cdcdfa2009d39f94e3fd"></a>
+          </div>
+          <div class="name"><a href="/profiles/mario">Raffe</a></div>
+        </div>
+      </div>
+    </div>
+    <div class="clear"></div>
+    <div style="margin-top: 6px">
+      <a href="#" class="button forumButton postReply" role="button">Post reply</a>
+    </div>
+  </div>
+  <div class="clear"></div>
+
+  <script type="text/javascript" src="/pad/grande/js/grande.js" end-of-body></script>
+  <script type="text/javascript" end-of-body>
+    grande.bind(document.getElementById("postEditor"));
+  </script>
+
+</forum-reply>
